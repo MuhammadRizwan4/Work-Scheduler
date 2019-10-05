@@ -211,7 +211,7 @@
                         android:id="@+id/user_location"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="none" />
+                        android:inputType="textMultiLine" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -261,7 +261,7 @@
                     android:id="@+id/work_description_text_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="none" />
+                    android:inputType="textMultiLine" />
 
             </com.google.android.material.textfield.TextInputLayout>
 

@@ -22,6 +22,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
 
         manifestPlaceholders = [
                 onesignal_app_id               : '0539ffae-d041-41b0-a219-88c6295b9731',
@@ -93,6 +94,11 @@ dependencies {
     //date and time picker
     implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
 
+    //Google Maps API
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
+
+    //Multidex
+    implementation 'com.android.support:multidex:1.0.3'
 }
 
 apply plugin: 'com.google.gms.google-services'

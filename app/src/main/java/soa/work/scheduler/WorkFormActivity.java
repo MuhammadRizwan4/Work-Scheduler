@@ -2,18 +2,26 @@ package soa.work.scheduler;
 
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiActivity;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -41,6 +49,9 @@ import soa.work.scheduler.Retrofit.RetrofitClient;
 import soa.work.scheduler.models.AppStatus;
 
 import static soa.work.scheduler.Constants.CURRENTLY_AVAILABLE_WORKS;
+import static soa.work.scheduler.Constants.LATITUDE;
+import static soa.work.scheduler.Constants.LOCALITY;
+import static soa.work.scheduler.Constants.LONGITUDE;
 import static soa.work.scheduler.Constants.USER_ACCOUNTS;
 import static soa.work.scheduler.Constants.WORKS_POSTED;
 import static soa.work.scheduler.Constants.WORK_CATEGORY;
@@ -61,13 +72,19 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
     TextView pickedDateTextView;
     @BindView(R.id.date)
     Button button_date;
+    @BindView(R.id.choose_on_maps_button)
+    Button chooseOnMapsButton;
+    @BindView(R.id.address_edit_text_layout)
+    TextInputLayout addressEditTextLayout;
     private AppStatus appStatus;
     private String oneSignalAppId;
     private String oneSignalRestApiKey;
     private String workCategory;
     private static final String DIALOG_DATE = "MainActivity.DateDialog";
     private static final String DIALOG_TIME = "MainActivity.TimeDialog";
-    private String deadline, deadline_date;
+    private static final int CHOOSE_ON_MAPS_REQUEST_CODE = 301;
+    private String deadline, deadline_date, locality, latitude, longitude;
+    private static final int ERROR_DIALOG_REQUEST = 9001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,14 +92,54 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
         setContentView(R.layout.activity_work_form);
 
         ButterKnife.bind(this);
+
         workCategory = getIntent().getStringExtra(WORK_CATEGORY);
         getOneSignalKeys();
+        addressEditTextLayout.setVisibility(View.GONE);
 
         appStatus = new AppStatus(this);
         button_date.setOnClickListener(arg0 -> {
             DatePickerFragment dialog = new DatePickerFragment();
             dialog.show(getSupportFragmentManager(), DIALOG_DATE);
         });
+
+        chooseOnMapsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isServicesOK()) {
+                    Intent intent = new Intent(WorkFormActivity.this, MapsActivity.class);
+                    startActivityForResult(intent, CHOOSE_ON_MAPS_REQUEST_CODE);
+                }
+            }
+        });
+    }
+
+    private boolean isServicesOK() {
+        int available = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(WorkFormActivity.this);
+        if (available == ConnectionResult.SUCCESS) {
+            return true;
+        } else if (GoogleApiAvailability.getInstance().isUserResolvableError(available)) {
+            Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(WorkFormActivity.this, available, ERROR_DIALOG_REQUEST);
+            dialog.show();
+        } else {
+            Toast.makeText(this, "You can't choose location on Maps due to some error", Toast.LENGTH_SHORT).show();
+        }
+        return false;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == CHOOSE_ON_MAPS_REQUEST_CODE){
+            if (resultCode == RESULT_OK && data != null) {
+                locality = data.getStringExtra(LOCALITY);
+                longitude = data.getStringExtra(LONGITUDE);
+                latitude = data.getStringExtra(LATITUDE);
+                addressEditTextLayout.setVisibility(View.VISIBLE);
+                addressEditText.setText(locality);
+            }
+        }
     }
 
     private void broadcast() {
