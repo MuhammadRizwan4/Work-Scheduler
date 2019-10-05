@@ -1,4 +1,5 @@
 package soa.work.scheduler;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
@@ -21,7 +22,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Scanner;
 
 import butterknife.BindView;
@@ -103,16 +104,16 @@ public class WorkDetailsActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 UniversalWork work = dataSnapshot.getValue(UniversalWork.class);
-                postedAtTextView.setText(work.getCreated_date());
+                postedAtTextView.setText(Objects.requireNonNull(work).getCreated_date());
                 postedByTextView.setText(work.getWork_posted_by_name());
-                priceRangeTextView.setText("Rs." + work.getPrice_range_from() + " - Rs." + work.getPrice_range_to());
+                priceRangeTextView.setText(String.format("Rs.%s - Rs.%s", work.getPrice_range_from(), work.getPrice_range_to()));
                 userPhoneNumberTextView.setText(work.getUser_phone());
                 userLocationTextView.setText(work.getWork_address());
                 deadlineTextView.setText(work.getWork_deadline());
                 workDescriptionTextView.setText(work.getWork_description());
                 if (work.getAssigned_to_id().equals(currentUser.getUid())) {
                     acceptWorkButton.setEnabled(false);
-                    acceptWorkButton.setText("You have accepted this work");
+                    acceptWorkButton.setText(getString(R.string.you_have_accepted));
                 }
             }
 
@@ -142,7 +143,7 @@ public class WorkDetailsActivity extends AppCompatActivity {
                             currentWork.child(WORK_ASSIGNED_TO).setValue(currentUser.getDisplayName());
                             currentWork.child(WORK_ASSIGNED_AT).setValue(currentDateAndTime);
                             currentWork.child(WORK_ASSIGNED_TO_ID).setValue(currentUser.getUid());
-                            currentWork.child(WORKER_PHONE_NUMBER).setValue(userAccount.getPhone_number());
+                            currentWork.child(WORKER_PHONE_NUMBER).setValue(Objects.requireNonNull(userAccount).getPhone_number());
 
                             DatabaseReference accountOfUser = database.getReference(USER_ACCOUNTS).child(work_posted_by_account_id);
                             DatabaseReference workInUserHistory = accountOfUser.child(WORKS_POSTED).child(work_posted_by_account_id + "-" + created_date);
@@ -151,7 +152,7 @@ public class WorkDetailsActivity extends AppCompatActivity {
                             workInUserHistory.child(WORK_ASSIGNED_TO_ID).setValue(currentUser.getUid());
                             workInUserHistory.child(WORKER_PHONE_NUMBER).setValue(userAccount.getPhone_number());
                             acceptWorkButton.setEnabled(false);
-                            acceptWorkButton.setText("You have accepted this work");
+                            acceptWorkButton.setText(getString(R.string.you_have_accepted));
                             getOneSignalKeys();
                         }
 

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:padding="8dp">
 
 
@@ -24,16 +24,17 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_centerVertical="true"
-                    android:src="@drawable/ic_clock"/>
+                    android:contentDescription="@string/descriptive_icon"
+                    android:src="@drawable/ic_clock" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_toEndOf="@id/clock_icon"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="10dp"
-                    android:hint="Posted At">
+                    android:layout_toEndOf="@id/clock_icon"
+                    android:hint="@string/posted_at_hint">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/posted_at_text_view"
@@ -56,16 +57,17 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_centerVertical="true"
-                    android:src="@drawable/ic_user_accent_color"/>
+                    android:contentDescription="@string/descriptive_icon"
+                    android:src="@drawable/ic_user_accent_color" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_toEndOf="@id/user_icon"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="10dp"
-                    android:hint="Posted By">
+                    android:layout_toEndOf="@id/user_icon"
+                    android:hint="@string/posted_by_hint">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/posted_by_text_view"
@@ -87,16 +89,17 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_centerVertical="true"
-                    android:src="@drawable/ic_money"/>
+                    android:contentDescription="@string/descriptive_icon"
+                    android:src="@drawable/ic_money" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_toEndOf="@id/money_icon"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="10dp"
-                    android:hint="Price Range">
+                    android:layout_toEndOf="@id/money_icon"
+                    android:hint="@string/price_range_hint">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/price_range_text_view"
@@ -118,24 +121,25 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_centerVertical="true"
-                    android:src="@drawable/ic_call"/>
+                    android:contentDescription="@string/descriptive_icon"
+                    android:src="@drawable/ic_call" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_toEndOf="@id/call_icon"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="10dp"
-                    android:hint="Contact Info">
+                    android:layout_toEndOf="@id/call_icon"
+                    android:hint="@string/contact_info_hint">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/user_phone_number"
                         android:layout_width="match_parent"
-                        android:autoLink="phone"
-                        android:linksClickable="true"
                         android:layout_height="wrap_content"
-                        android:inputType="none" />
+                        android:autoLink="phone"
+                        android:inputType="none"
+                        android:linksClickable="true" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -152,16 +156,17 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_centerVertical="true"
-                    android:src="@drawable/ic_place"/>
+                    android:contentDescription="@string/descriptive_icon"
+                    android:src="@drawable/ic_place" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_toEndOf="@id/place_icon"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="10dp"
-                    android:hint="Location">
+                    android:layout_toEndOf="@id/place_icon"
+                    android:hint="@string/location_hint">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/user_location"
@@ -183,16 +188,17 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_centerVertical="true"
-                    android:src="@drawable/ic_calender"/>
+                    android:contentDescription="@string/descriptive_icon"
+                    android:src="@drawable/ic_calender" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_toEndOf="@id/deadline_icon"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="10dp"
-                    android:hint="Deadline">
+                    android:layout_toEndOf="@id/deadline_icon"
+                    android:hint="@string/deadline_hint">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/deadline_text_view"
@@ -209,28 +215,29 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:layout_marginStart="40dp"
-                android:hint="Work Description">
+                android:layout_marginTop="8dp"
+                android:hint="@string/work_description_hint">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/work_description_text_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="none" />
+                    android:inputType="textMultiLine" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
 
     </ScrollView>
+
     <Button
         android:id="@+id/work_accept"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_margin="10dp"
-        android:textColor="@android:color/white"
-        android:text="Accept this work"
-        android:layout_alignParentBottom="true"/>
+        android:text="@string/accept_this_work_btn"
+        android:textColor="@android:color/white" />
 
 </RelativeLayout>
