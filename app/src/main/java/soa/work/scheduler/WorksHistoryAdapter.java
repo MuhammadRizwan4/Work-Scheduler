@@ -1,13 +1,18 @@
 package soa.work.scheduler;
 
+import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.List;
 
@@ -24,9 +29,11 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
 
     private ItemCLickListener itemCLickListener;
     private List<IndividualWork> list;
-
-    WorksHistoryAdapter(List<IndividualWork> list) {
+    private IndividualWork work;
+    private Context mContext;
+    WorksHistoryAdapter(List<IndividualWork> list, Context mContext) {
         this.list = list;
+        this.mContext = mContext;
     }
 
     @NonNull
@@ -38,7 +45,7 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        IndividualWork work = list.get(position);
+        work = list.get(position);
         holder.workDescriptionTextView.setText("Description: " + work.getWork_description());
         holder.createdAtTextView.setText("Posted at: " + work.getCreated_date());
 
@@ -70,6 +77,10 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
         } else {
             holder.assignedToTextView.setText("Not Assigned");
         }
+        
+        if (work.getWork_deleted()){
+            holder.delete.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -93,6 +104,8 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
         TextView completedStatusTextView;
         @BindView(R.id.assigned_to_text_view)
         TextView assignedToTextView;
+        @BindView(R.id.delete)
+        ImageView delete;
 
         ViewHolder(View view) {
             super(view);
@@ -102,9 +115,14 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
 
         @Override
         public void onClick(View view) {
-            if (itemCLickListener != null) {
-                itemCLickListener.onItemClick(list.get(getAdapterPosition()));
+            if (work.getWork_deleted()){
+                Toast.makeText(mContext, "Work Deleted", Toast.LENGTH_SHORT).show();
+            } else {
+                if (itemCLickListener != null) {
+                    itemCLickListener.onItemClick(list.get(getAdapterPosition()));
+                }
             }
+
         }
     }
 

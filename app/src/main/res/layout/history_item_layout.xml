@@ -68,6 +68,13 @@
 
             </LinearLayout>
 
+            <ImageView
+                android:id="@+id/delete"
+                android:layout_width="80dp"
+                android:layout_height="100dp"
+                android:visibility="gone"
+                card_view:srcCompat="@drawable/delete" />
+
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>

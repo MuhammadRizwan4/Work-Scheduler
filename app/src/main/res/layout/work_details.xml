@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+<RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <ScrollView
         android:layout_width="match_parent"
+        android:id="@+id/scroll"
         android:layout_height="wrap_content">
 
         <LinearLayout
@@ -230,6 +235,12 @@
         </LinearLayout>
 
     </ScrollView>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/scroll"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="10dp">
 
     <Button
         android:id="@+id/work_accept"
@@ -239,5 +250,7 @@
         android:layout_margin="10dp"
         android:text="@string/accept_this_work_btn"
         android:textColor="@android:color/white" />
+    </RelativeLayout>
 
 </RelativeLayout>
+</ScrollView>

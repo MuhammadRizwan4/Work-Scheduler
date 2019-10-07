@@ -47,7 +47,7 @@ public class WorksHistoryActivity extends AppCompatActivity implements WorksHist
 
         ButterKnife.bind(this);
 
-        worksHistoryAdapter = new WorksHistoryAdapter(workList);
+        worksHistoryAdapter = new WorksHistoryAdapter(workList, this);
         worksHistoryAdapter.setItemClickListener(this);
         historyRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         historyRecyclerView.setHasFixedSize(true);
@@ -70,6 +70,8 @@ public class WorksHistoryActivity extends AppCompatActivity implements WorksHist
                 for (DataSnapshot item: dataSnapshot.getChildren()) {
                     workList.add(item.getValue(IndividualWork.class));
                 }
+
+
                 Collections.sort(workList, new Comparator<IndividualWork>() {
                     @Override
                     public int compare(IndividualWork individualWork, IndividualWork t1) {

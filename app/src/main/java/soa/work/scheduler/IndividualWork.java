@@ -14,8 +14,17 @@ public class IndividualWork {
     private String work_deadline;
     private String price_range_from;
     private String price_range_to;
+    private boolean work_deleted;
 
     public IndividualWork() {
+    }
+
+    public boolean getWork_deleted() {
+        return work_deleted;
+    }
+
+    public void setWork_deleted(boolean work_deleted) {
+        this.work_deleted = work_deleted;
     }
 
     public String getPrice_range_from() {

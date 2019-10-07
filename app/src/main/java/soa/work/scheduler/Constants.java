@@ -18,4 +18,8 @@ class Constants {
     static final String UID = "uid";
     static final String PHONE_NUMBER = "phone_number";
     static final String WORKER_PHONE_NUMBER = "worker_phone_number";
+    static final String LOCALITY = "locality";
+    static final String LATITUDE = "latitude";
+    static final String LONGITUDE = "longitude";
+    static final String DELETE = "work_deleted";
 }

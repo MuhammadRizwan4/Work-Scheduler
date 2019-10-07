@@ -12,4 +12,5 @@
     <string name="accept_this_work_btn">Accept this work</string>
     <string name="work_description_hint">Work Description</string>
     <string name="you_have_accepted">You have accepted this work</string>
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyDxlNwc0KqZFIvu-mh2lwxVejeZeXAOsR8</string>
 </resources>

@@ -82,13 +82,13 @@ public class WorkDetailsActivity extends AppCompatActivity {
 
         setTitle("Work Details");
 
-        postedAtTextView.setInputType(InputType.TYPE_NULL);
-        postedByTextView.setInputType(InputType.TYPE_NULL);
-        priceRangeTextView.setInputType(InputType.TYPE_NULL);
-        userPhoneNumberTextView.setInputType(InputType.TYPE_NULL);
-        userLocationTextView.setInputType(InputType.TYPE_NULL);
-        deadlineTextView.setInputType(InputType.TYPE_NULL);
-        workDescriptionTextView.setInputType(InputType.TYPE_NULL);
+        postedAtTextView.setFocusable(false);
+        postedByTextView.setFocusable(false);
+        priceRangeTextView.setFocusable(false);
+        userPhoneNumberTextView.setFocusable(false);
+        userLocationTextView.setFocusable(false);
+        deadlineTextView.setFocusable(false);
+        workDescriptionTextView.setFocusable(false);
 
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();

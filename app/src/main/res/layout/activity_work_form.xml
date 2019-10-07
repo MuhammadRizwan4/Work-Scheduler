@@ -12,7 +12,15 @@
         android:padding="8dp"
         tools:context=".WorkFormActivity">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Work Address:"
+            android:textSize="18sp"
+            android:textColor="@android:color/black"/>
+
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/address_edit_text_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,6 +35,12 @@
                 android:maxLines="4" />
 
         </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/choose_on_maps_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Choose on Maps"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -52,6 +66,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
+                    android:nextFocusRight="@id/price_range_to"
                     android:maxLines="1" />
 
             </com.google.android.material.textfield.TextInputLayout>
