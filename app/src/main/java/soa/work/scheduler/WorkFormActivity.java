@@ -4,6 +4,7 @@ package soa.work.scheduler;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
@@ -181,6 +182,8 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
         work.setWork_completed(false);
         work.setWork_deadline(deadline);
         work.setWork_description(workDescriptionEditText.getText().toString());
+        work.setLatitude("");
+        work.setLongitude("");
         if (user != null) {
             work.setWork_posted_by_account_id(user.getUid());
         }
@@ -207,6 +210,10 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
         individualWork.setWork_completed(false);
         individualWork.setWork_deadline(deadline);
         individualWork.setWork_deleted(false);
+        individualWork.setWork_cancel(false);
+        individualWork.setWork_latitude("");
+        individualWork.setWork_longitude("");
+
         if (user != null) {
             userAccountsRef.child(user.getUid()).child(WORKS_POSTED).child(user.getUid() + "-" + currentDateAndTime).setValue(individualWork);
         }

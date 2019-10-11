@@ -3,7 +3,6 @@ package soa.work.scheduler;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -55,6 +54,8 @@ public class WorkDetailsActivityForUser extends AppCompatActivity {
     Button work_s;
     @BindView(R.id.work_del)
     Button work_d;
+    @BindView(R.id.work_accept)
+    Button work_delete_cancel;
 
     private String created_date;
     private String assigned_to_id;
@@ -116,6 +117,7 @@ public class WorkDetailsActivityForUser extends AppCompatActivity {
         DatabaseReference current_work = database.getReference(USER_ACCOUNTS).child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .child(WORKS_POSTED).child(FirebaseAuth.getInstance().getCurrentUser().getUid() +
                         "-" + created_date);
+        DatabaseReference currentWork = database.getReference(CURRENTLY_AVAILABLE_WORKS).child(FirebaseAuth.getInstance().getCurrentUser().getUid() + "-" + created_date);
 
         work_d.setOnClickListener(view -> new AlertDialog.Builder(WorkDetailsActivityForUser.this)
                .setMessage("Are you sure want to delete?")
@@ -123,13 +125,18 @@ public class WorkDetailsActivityForUser extends AppCompatActivity {
                .setPositiveButton("YES", (dialog, which) -> {
                    Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
                    current_work.child(DELETE).setValue(true);
+                   /**
+                    * FIXME Send notification here, if it is assigned
+                    */
+                   currentWork.removeValue();
+
                })
                .setNegativeButton("NO", (dialog, which) -> {
                   dialog.dismiss();
                }).create().show());
 
         database = FirebaseDatabase.getInstance();
-        DatabaseReference currentWork = database.getReference(CURRENTLY_AVAILABLE_WORKS).child(FirebaseAuth.getInstance().getCurrentUser().getUid() + "-" + created_date);
+
         FirebaseDatabase finalDatabase = database;
         currentWork.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -137,31 +144,22 @@ public class WorkDetailsActivityForUser extends AppCompatActivity {
                 UniversalWork work = dataSnapshot.getValue(UniversalWork.class);
                 if (work != null) {
                     assigned_to_id = work.getAssigned_to_id();
-                }
-                if (work != null) {
                     postedAtTextView.setText(work.getCreated_date());
-                }
-                if (work != null) {
                     priceRangeTextView.setText("Rs." + work.getPrice_range_from() + " - Rs." + work.getPrice_range_to());
-                }
-                if (work != null) {
                     userPhoneNumberTextView.setText(work.getUser_phone());
-                }
-                if (work != null) {
                     userLocationTextView.setText(work.getWork_address());
-                }
-                deadlineTextView.setText(work.getWork_deadline());
-                workDescriptionTextView.setText(work.getWork_description());
-                workerPhoneNumberTextView.setText(" ");
-                if (!work.getAssigned_to().isEmpty()) {
-                    workerNameTextView.setText(work.getAssigned_to());
-                    work_s.setEnabled(true);
-                } else {
-                    workerNameTextView.setText(" ");
-                     work_s.setEnabled(false);
-                }
+                    deadlineTextView.setText(work.getWork_deadline());
+                    workDescriptionTextView.setText(work.getWork_description());
+                    workerPhoneNumberTextView.setText(" ");
 
-
+                    if (!work.getAssigned_to().isEmpty()) {
+                        workerNameTextView.setText(work.getAssigned_to());
+                        work_s.setEnabled(true);
+                    } else {
+                        workerNameTextView.setText(" ");
+                        work_s.setEnabled(false);
+                    }
+                }
                 DatabaseReference currentWorkerPhone = finalDatabase.getReference().child(USER_ACCOUNTS).child(assigned_to_id).child(PHONE_NUMBER);
                 currentWorkerPhone.addValueEventListener(new ValueEventListener() {
                     @Override
@@ -173,9 +171,7 @@ public class WorkDetailsActivityForUser extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
+                    public void onCancelled(@NonNull DatabaseError databaseError) { }
                 });
             }
 

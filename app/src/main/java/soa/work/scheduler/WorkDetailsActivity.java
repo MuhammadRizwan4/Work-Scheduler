@@ -1,5 +1,6 @@
 package soa.work.scheduler;
 
+import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
@@ -48,6 +49,7 @@ import static soa.work.scheduler.Constants.WORKS_POSTED;
 import static soa.work.scheduler.Constants.WORK_ASSIGNED_AT;
 import static soa.work.scheduler.Constants.WORK_ASSIGNED_TO;
 import static soa.work.scheduler.Constants.WORK_ASSIGNED_TO_ID;
+import static soa.work.scheduler.Constants.WORK_CANCEL;
 
 public class WorkDetailsActivity extends AppCompatActivity {
 
@@ -72,6 +74,9 @@ public class WorkDetailsActivity extends AppCompatActivity {
     private String created_date, work_posted_by_account_id;
     private String oneSignalAppId;
     private String oneSignalRestApiKey;
+    private boolean is_assignned;
+    private String account_id;
+    private String created_Date;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -101,6 +106,7 @@ public class WorkDetailsActivity extends AppCompatActivity {
         }
         DatabaseReference currentWork = database.getReference(CURRENTLY_AVAILABLE_WORKS).child(work_posted_by_account_id + "-" + created_date);
         currentWork.addListenerForSingleValueEvent(new ValueEventListener() {
+            @SuppressLint("ResourceAsColor")
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 UniversalWork work = dataSnapshot.getValue(UniversalWork.class);
@@ -110,10 +116,13 @@ public class WorkDetailsActivity extends AppCompatActivity {
                 userPhoneNumberTextView.setText(work.getUser_phone());
                 userLocationTextView.setText(work.getWork_address());
                 deadlineTextView.setText(work.getWork_deadline());
+                account_id = work.getWork_posted_by_account_id();
+                created_Date = work.getCreated_date();
                 workDescriptionTextView.setText(work.getWork_description());
                 if (work.getAssigned_to_id().equals(currentUser.getUid())) {
-                    acceptWorkButton.setEnabled(false);
-                    acceptWorkButton.setText(getString(R.string.you_have_accepted));
+                    acceptWorkButton.setText("CANCEL WORK");
+                    acceptWorkButton.setBackgroundTintList(getResources().getColorStateList(R.color.button_color));
+                    is_assignned = true;
                 }
             }
 
@@ -123,47 +132,69 @@ public class WorkDetailsActivity extends AppCompatActivity {
             }
         });
 
-        acceptWorkButton.setOnClickListener(view -> new AlertDialog.Builder(WorkDetailsActivity.this)
-                .setMessage("Are you sure want to accept?")
-                .setCancelable(true)
-                .setPositiveButton("YES", (dialog, which) -> {
+        acceptWorkButton.setOnClickListener(view -> {
+            if (!is_assignned) {
+                new AlertDialog.Builder(WorkDetailsActivity.this)
+                        .setMessage("Are you sure want to accept?")
+                        .setCancelable(true)
+                        .setPositiveButton("YES", (dialog, which) -> {
+                            FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+                            DatabaseReference userAccountsRef = firebaseDatabase.getReference(USER_ACCOUNTS);
+                            DatabaseReference currentAccount = userAccountsRef.child(currentUser.getUid());
+                            currentAccount.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    UserAccount userAccount = dataSnapshot.getValue(UserAccount.class);
+                                    Toast.makeText(WorkDetailsActivity.this, "Accepted", Toast.LENGTH_SHORT).show();
 
-                    FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-                    DatabaseReference userAccountsRef = firebaseDatabase.getReference(USER_ACCOUNTS);
-                    DatabaseReference currentAccount = userAccountsRef.child(currentUser.getUid());
-                    currentAccount.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            UserAccount userAccount = dataSnapshot.getValue(UserAccount.class);
-                            Toast.makeText(WorkDetailsActivity.this, "Accepted", Toast.LENGTH_SHORT).show();
+                                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.getDefault());
+                                    String currentDateAndTime = sdf.format(new Date());
 
-                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.getDefault());
-                            String currentDateAndTime = sdf.format(new Date());
+                                    currentWork.child(WORK_ASSIGNED_TO).setValue(currentUser.getDisplayName());
+                                    currentWork.child(WORK_ASSIGNED_AT).setValue(currentDateAndTime);
+                                    currentWork.child(WORK_ASSIGNED_TO_ID).setValue(currentUser.getUid());
+                                    currentWork.child(WORKER_PHONE_NUMBER).setValue(Objects.requireNonNull(userAccount).getPhone_number());
 
-                            currentWork.child(WORK_ASSIGNED_TO).setValue(currentUser.getDisplayName());
-                            currentWork.child(WORK_ASSIGNED_AT).setValue(currentDateAndTime);
-                            currentWork.child(WORK_ASSIGNED_TO_ID).setValue(currentUser.getUid());
-                            currentWork.child(WORKER_PHONE_NUMBER).setValue(Objects.requireNonNull(userAccount).getPhone_number());
+                                    DatabaseReference accountOfUser = database.getReference(USER_ACCOUNTS).child(work_posted_by_account_id);
+                                    DatabaseReference workInUserHistory = accountOfUser.child(WORKS_POSTED).child(work_posted_by_account_id + "-" + created_date);
+                                    workInUserHistory.child(WORK_ASSIGNED_TO).setValue(currentUser.getDisplayName());
+                                    workInUserHistory.child(WORK_ASSIGNED_AT).setValue(currentDateAndTime);
+                                    workInUserHistory.child(WORK_ASSIGNED_TO_ID).setValue(currentUser.getUid());
+                                    workInUserHistory.child(WORKER_PHONE_NUMBER).setValue(userAccount.getPhone_number());
+                                    acceptWorkButton.setText("CANCEL WORK");
+                                    acceptWorkButton.setBackgroundTintList(getResources().getColorStateList(R.color.button_color));
+                                    is_assignned = true;
+                                    getOneSignalKeys();
+                                }
 
-                            DatabaseReference accountOfUser = database.getReference(USER_ACCOUNTS).child(work_posted_by_account_id);
-                            DatabaseReference workInUserHistory = accountOfUser.child(WORKS_POSTED).child(work_posted_by_account_id + "-" + created_date);
-                            workInUserHistory.child(WORK_ASSIGNED_TO).setValue(currentUser.getDisplayName());
-                            workInUserHistory.child(WORK_ASSIGNED_AT).setValue(currentDateAndTime);
-                            workInUserHistory.child(WORK_ASSIGNED_TO_ID).setValue(currentUser.getUid());
-                            workInUserHistory.child(WORKER_PHONE_NUMBER).setValue(userAccount.getPhone_number());
-                            acceptWorkButton.setEnabled(false);
-                            acceptWorkButton.setText(getString(R.string.you_have_accepted));
-                            getOneSignalKeys();
-                        }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                                }
+                            });
 
-                        }
-                    });
+                        })
+                        .setNegativeButton("NO", (dialog, which) -> dialog.dismiss()).create().show();
+            } else {
+                new AlertDialog.Builder(WorkDetailsActivity.this)
+                        .setMessage("Are you sure want to cancel?")
+                        .setCancelable(true)
+                        .setPositiveButton("YES", (dialog, which) -> {
+                            DatabaseReference cancel_work = database.getReference(USER_ACCOUNTS).child(account_id).child(WORKS_POSTED)
+                                    .child(account_id +"-"+ created_Date).child(WORK_CANCEL);
+                            cancel_work.setValue(true);
+                            /**
+                             * FIXME Send notification here
+                             */
+                            currentWork.removeValue();
+                            Toast.makeText(this, "cancelled", Toast.LENGTH_SHORT).show();
 
-                })
-                .setNegativeButton("NO", (dialog, which) -> dialog.dismiss()).create().show());
+                        })
+                        .setNegativeButton("NO", (dialog, which) -> {
+                            dialog.dismiss();
+                        }).create().show();
+            }
+        });
     }
 
     private void getOneSignalKeys() {

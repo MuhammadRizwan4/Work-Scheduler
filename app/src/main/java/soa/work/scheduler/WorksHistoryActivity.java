@@ -23,6 +23,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -55,7 +56,7 @@ public class WorksHistoryActivity extends AppCompatActivity implements WorksHist
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference userAccounts = database.getReference(USER_ACCOUNTS);
-        DatabaseReference userAccount = userAccounts.child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        DatabaseReference userAccount = userAccounts.child(Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid());
         DatabaseReference worksPosted = userAccount.child(WORKS_POSTED);
 
         worksPosted.addValueEventListener(new ValueEventListener() {

@@ -22,4 +22,5 @@ class Constants {
     static final String LATITUDE = "latitude";
     static final String LONGITUDE = "longitude";
     static final String DELETE = "work_deleted";
+    static final String WORK_CANCEL = "work_cancel";
 }

@@ -16,8 +16,26 @@ public class UniversalWork {
     private String work_posted_by_name;
     private String price_range_from;
     private String price_range_to;
+    private String latitude;
+    private String longitude;
 
     public UniversalWork() {
+    }
+
+    public String getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
+    }
+
+    public String getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(String longitude) {
+        this.longitude = longitude;
     }
 
     public String getPrice_range_from() {

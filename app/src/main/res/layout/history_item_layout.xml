@@ -69,11 +69,10 @@
             </LinearLayout>
 
             <ImageView
-                android:id="@+id/delete"
+                android:id="@+id/status"
                 android:layout_width="80dp"
                 android:layout_height="100dp"
-                android:visibility="gone"
-                card_view:srcCompat="@drawable/delete" />
+                android:visibility="gone"/>
 
         </LinearLayout>
 

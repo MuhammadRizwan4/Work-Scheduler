@@ -1,7 +1,6 @@
 package soa.work.scheduler;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +10,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.List;
 
@@ -77,9 +74,13 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
         } else {
             holder.assignedToTextView.setText("Not Assigned");
         }
-        
+
         if (work.getWork_deleted()){
-            holder.delete.setVisibility(View.VISIBLE);
+            holder.status.setVisibility(View.VISIBLE);
+            holder.status.setBackgroundResource(R.drawable.delete);
+        } else if (work.getWork_cancel()){
+            holder.status.setVisibility(View.VISIBLE);
+            holder.status.setBackgroundResource(R.drawable.cancelled);
         }
     }
 
@@ -104,8 +105,8 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
         TextView completedStatusTextView;
         @BindView(R.id.assigned_to_text_view)
         TextView assignedToTextView;
-        @BindView(R.id.delete)
-        ImageView delete;
+        @BindView(R.id.status)
+        ImageView status;
 
         ViewHolder(View view) {
             super(view);
@@ -115,14 +116,9 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
 
         @Override
         public void onClick(View view) {
-            if (work.getWork_deleted()){
-                Toast.makeText(mContext, "Work Deleted", Toast.LENGTH_SHORT).show();
-            } else {
-                if (itemCLickListener != null) {
-                    itemCLickListener.onItemClick(list.get(getAdapterPosition()));
-                }
+            if (itemCLickListener != null) {
+                itemCLickListener.onItemClick(list.get(getAdapterPosition()));
             }
-
         }
     }
 

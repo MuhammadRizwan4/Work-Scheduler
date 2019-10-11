@@ -15,8 +15,35 @@ public class IndividualWork {
     private String price_range_from;
     private String price_range_to;
     private boolean work_deleted;
+    private boolean work_cancel;
+    private String work_latitude;
+    private String work_longitude;
 
     public IndividualWork() {
+    }
+
+    public String getWork_latitude() {
+        return work_latitude;
+    }
+
+    public void setWork_latitude(String work_latitude) {
+        this.work_latitude = work_latitude;
+    }
+
+    public String getWork_longitude() {
+        return work_longitude;
+    }
+
+    public void setWork_longitude(String work_longitude) {
+        this.work_longitude = work_longitude;
+    }
+
+    public boolean getWork_cancel() {
+        return work_cancel;
+    }
+
+    public void setWork_cancel(boolean work_cancel) {
+        this.work_cancel = work_cancel;
     }
 
     public boolean getWork_deleted() {
