@@ -1,4 +1,4 @@
-package soa.work.scheduler;
+package soa.work.scheduler.models;
 
 public class UniversalWork {
     private String assigned_at;

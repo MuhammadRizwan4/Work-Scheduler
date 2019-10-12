@@ -1,12 +1,12 @@
-package soa.work.scheduler;
+package soa.work.scheduler.utilities;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import static soa.work.scheduler.Constants.USER_ACCOUNT;
+import static soa.work.scheduler.data.Constants.USER_ACCOUNT;
 
-class PrefManager {
+public class PrefManager {
 
     private static final String PREF_NAME = "work_scheduler";
     private static final String LAST_OPENED_ACTIVITY = "last_opened_activity";
@@ -15,17 +15,17 @@ class PrefManager {
     private SharedPreferences.Editor editor;
 
     @SuppressLint("CommitPrefEdits")
-    PrefManager(Context context) {
+    public PrefManager(Context context) {
         int PRIVATE_MODE = 0;
         pref = context.getSharedPreferences(PREF_NAME, PRIVATE_MODE);
         editor = pref.edit();
     }
 
-    int getLastOpenedActivity() {
+    public int getLastOpenedActivity() {
         return pref.getInt(LAST_OPENED_ACTIVITY, /*default value*/USER_ACCOUNT);
     }
 
-    void setLastOpenedActivity(int lastOpenedActivity) {
+    public void setLastOpenedActivity(int lastOpenedActivity) {
         editor.putInt(LAST_OPENED_ACTIVITY, lastOpenedActivity);
         editor.apply();
     }

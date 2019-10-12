@@ -1,4 +1,4 @@
-package soa.work.scheduler;
+package soa.work.scheduler.userAccount;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,9 +27,11 @@ import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import soa.work.scheduler.R;
+import soa.work.scheduler.models.IndividualWork;
 
-import static soa.work.scheduler.Constants.USER_ACCOUNTS;
-import static soa.work.scheduler.Constants.WORKS_POSTED;
+import static soa.work.scheduler.data.Constants.USER_ACCOUNTS;
+import static soa.work.scheduler.data.Constants.WORKS_POSTED;
 
 public class WorksHistoryActivity extends AppCompatActivity implements WorksHistoryAdapter.ItemCLickListener {
 
@@ -47,6 +49,8 @@ public class WorksHistoryActivity extends AppCompatActivity implements WorksHist
         setContentView(R.layout.activity_works_history);
 
         ButterKnife.bind(this);
+
+        setTitle("History");
 
         worksHistoryAdapter = new WorksHistoryAdapter(workList, this);
         worksHistoryAdapter.setItemClickListener(this);

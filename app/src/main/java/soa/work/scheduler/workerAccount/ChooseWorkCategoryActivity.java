@@ -1,4 +1,4 @@
-package soa.work.scheduler;
+package soa.work.scheduler.workerAccount;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,15 +22,19 @@ import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import soa.work.scheduler.CategoryRecyclerViewAdapter;
+import soa.work.scheduler.R;
+import soa.work.scheduler.models.Category;
+import soa.work.scheduler.userAccount.MainActivity;
 
-import static soa.work.scheduler.Constants.CARPENTER;
-import static soa.work.scheduler.Constants.ELECTRICIAN;
-import static soa.work.scheduler.Constants.MECHANIC;
-import static soa.work.scheduler.Constants.PAINTER;
-import static soa.work.scheduler.Constants.PHONE_NUMBER;
-import static soa.work.scheduler.Constants.PLUMBER;
-import static soa.work.scheduler.Constants.USER_ACCOUNTS;
-import static soa.work.scheduler.Constants.WORK_CATEGORY;
+import static soa.work.scheduler.data.Constants.CARPENTER;
+import static soa.work.scheduler.data.Constants.ELECTRICIAN;
+import static soa.work.scheduler.data.Constants.MECHANIC;
+import static soa.work.scheduler.data.Constants.PAINTER;
+import static soa.work.scheduler.data.Constants.PHONE_NUMBER;
+import static soa.work.scheduler.data.Constants.PLUMBER;
+import static soa.work.scheduler.data.Constants.USER_ACCOUNTS;
+import static soa.work.scheduler.data.Constants.WORK_CATEGORY;
 
 public class ChooseWorkCategoryActivity extends AppCompatActivity  {
 

@@ -30,10 +30,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import soa.work.scheduler.models.AppStatus;
+import soa.work.scheduler.utilities.AppStatus;
+import soa.work.scheduler.utilities.PrefManager;
+import soa.work.scheduler.models.UserAccount;
+import soa.work.scheduler.userAccount.MainActivity;
+import soa.work.scheduler.workerAccount.WorkersActivity;
 
-import static soa.work.scheduler.Constants.USER_ACCOUNT;
-import static soa.work.scheduler.Constants.USER_ACCOUNTS;
+import static soa.work.scheduler.data.Constants.USER_ACCOUNT;
+import static soa.work.scheduler.data.Constants.USER_ACCOUNTS;
+import static soa.work.scheduler.userAccount.MainActivity.IS_ACCOUNT_DELETED;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -83,14 +88,17 @@ public class LoginActivity extends AppCompatActivity {
         //and take the user to profile activity
         if (mAuth.getCurrentUser() != null) {
             if (appStatus.isOnline()) {
-                Intent intent;
-                if (prefManager.getLastOpenedActivity() == USER_ACCOUNT) {
-                    intent = new Intent(this, MainActivity.class);
-                } else {
-                    intent = new Intent(this, WorkersActivity.class);
+                boolean fromMainActivity = getIntent().getBooleanExtra(IS_ACCOUNT_DELETED, false);
+                if (!fromMainActivity) {
+                    Intent intent;
+                    if (prefManager.getLastOpenedActivity() == USER_ACCOUNT) {
+                        intent = new Intent(this, MainActivity.class);
+                    } else {
+                        intent = new Intent(this, WorkersActivity.class);
+                    }
+                    startActivity(intent);
+                    finish();
                 }
-                startActivity(intent);
-                finish();
             } else {
                 pd.dismiss();
                 Toast.makeText(this, "Please check your internet connection!", Toast.LENGTH_SHORT).show();

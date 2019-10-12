@@ -31,6 +31,8 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
+
+
                 <TextView
                     android:id="@+id/work_description_text_view"
                     android:layout_width="match_parent"
@@ -48,31 +50,31 @@
                     android:textColor="@android:color/black"
                     android:textSize="16sp" />
 
-                <TextView
-                    android:id="@+id/assigned_to_text_view"
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    tools:text="Assigned to: Syed Zeeshan"
-                    android:textColor="@android:color/black"
-                    android:textSize="16sp"/>
+                    android:layout_marginTop="6dp">
 
-                <TextView
-                    android:id="@+id/completed_status_text_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    tools:text="Completed"
-                    android:textColor="@android:color/black"
-                    android:textSize="16sp" />
+                    <ImageView
+                        android:id="@+id/status_icon"
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="6dp"
+                        tools:src="@drawable/circle_green"/>
+
+                    <TextView
+                        android:id="@+id/status_of_work"
+                        android:layout_width="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_toEndOf="@id/status_icon"
+                        android:textSize="14sp"
+                        android:layout_height="wrap_content"
+                        tools:text="Completed"/>
+
+                </RelativeLayout>
 
             </LinearLayout>
-
-            <ImageView
-                android:id="@+id/status"
-                android:layout_width="80dp"
-                android:layout_height="100dp"
-                android:visibility="gone"/>
 
         </LinearLayout>
 

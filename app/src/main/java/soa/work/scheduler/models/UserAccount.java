@@ -1,4 +1,4 @@
-package soa.work.scheduler;
+package soa.work.scheduler.models;
 
 public class UserAccount {
     private String account_created_on;

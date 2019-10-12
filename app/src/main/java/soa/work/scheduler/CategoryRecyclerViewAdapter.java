@@ -13,13 +13,14 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import soa.work.scheduler.models.Category;
 
 public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRecyclerViewAdapter.ViewHolder> {
 
     private List<Category> categories;
     private ItemCLickListener itemCLickListener;
 
-    CategoryRecyclerViewAdapter(List<Category> categories) {
+    public CategoryRecyclerViewAdapter(List<Category> categories) {
         this.categories = categories;
     }
 
@@ -41,7 +42,7 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
         return categories.size();
     }
 
-    void setItemClickListener(ItemCLickListener itemClickListener) {
+    public void setItemClickListener(ItemCLickListener itemClickListener) {
         this.itemCLickListener = itemClickListener;
     }
 

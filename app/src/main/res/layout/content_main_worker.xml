@@ -3,16 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".userAccount.MainActivity">
 
     <TextView
         android:id="@+id/hint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Currently available works to accept"
+        android:text="Available works nearby"
         android:padding="8dp"
         android:textSize="20sp"
         android:textStyle="bold"
+        android:gravity="center"
         android:layout_marginTop="8dp"
         android:textColor="@android:color/black"
         android:fontFamily="sans-serif-light"

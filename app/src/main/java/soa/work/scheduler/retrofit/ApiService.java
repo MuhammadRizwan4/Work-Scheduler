@@ -1,9 +1,9 @@
-package soa.work.scheduler.Retrofit;
+package soa.work.scheduler.retrofit;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Url;
-import soa.work.scheduler.OneSignalIds;
+import soa.work.scheduler.models.OneSignalIds;
 
 public interface ApiService {
 

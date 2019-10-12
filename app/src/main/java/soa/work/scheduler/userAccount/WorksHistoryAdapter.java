@@ -1,6 +1,5 @@
-package soa.work.scheduler;
+package soa.work.scheduler.userAccount;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,27 +8,28 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import soa.work.scheduler.R;
+import soa.work.scheduler.models.IndividualWork;
 
-import static soa.work.scheduler.Constants.CARPENTER;
-import static soa.work.scheduler.Constants.ELECTRICIAN;
-import static soa.work.scheduler.Constants.MECHANIC;
-import static soa.work.scheduler.Constants.PAINTER;
-import static soa.work.scheduler.Constants.PLUMBER;
+import static soa.work.scheduler.data.Constants.CARPENTER;
+import static soa.work.scheduler.data.Constants.ELECTRICIAN;
+import static soa.work.scheduler.data.Constants.MECHANIC;
+import static soa.work.scheduler.data.Constants.PAINTER;
+import static soa.work.scheduler.data.Constants.PLUMBER;
 
-public class WorksAvailableAdapter extends RecyclerView.Adapter<WorksAvailableAdapter.ViewHolder> {
+public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapter.ViewHolder> {
 
     private ItemCLickListener itemCLickListener;
-    private List<UniversalWork> list;
+    private List<IndividualWork> list;
+    private IndividualWork work;
     private Context mContext;
-
-    public WorksAvailableAdapter(List<UniversalWork> list, Context mContext) {
+    public WorksHistoryAdapter(List<IndividualWork> list, Context mContext) {
         this.list = list;
         this.mContext = mContext;
     }
@@ -37,18 +37,16 @@ public class WorksAvailableAdapter extends RecyclerView.Adapter<WorksAvailableAd
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.work_available_layout, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.history_item_layout, parent, false);
         return new ViewHolder(view);
     }
 
-    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        UniversalWork work = list.get(position);
-        holder.user_name.setText(work.getWork_posted_by_name());
+        work = list.get(position);
         holder.workDescriptionTextView.setText("Description: " + work.getWork_description());
-        holder.work_deadline.setText("Deadline: " + work.getWork_deadline());
-        holder.work_price_range.setText("Rs." + work.getPrice_range_from() + " - " + "Rs." + work.getPrice_range_to());
+        holder.createdAtTextView.setText("Posted at: " + work.getCreated_date());
+
         switch (work.getWork_category()) {
             case PAINTER:
                 holder.categoryImageView.setImageResource(R.drawable.ic_painter);
@@ -66,6 +64,22 @@ public class WorksAvailableAdapter extends RecyclerView.Adapter<WorksAvailableAd
                 holder.categoryImageView.setImageResource(R.drawable.ic_electrician);
         }
 
+        if (work.getIs_work_available()){
+            if (work.getWork_completed()) {
+                holder.statusOfWOrk.setText("Completed");
+                holder.statusIcon.setBackgroundResource(R.drawable.circle_green);
+            } else {
+                holder.statusIcon.setBackgroundResource(R.drawable.circle_yellow);
+                if (work.getAssigned_to() != null && !work.getAssigned_to().isEmpty()) {
+                    holder.statusOfWOrk.setText("Assigned to: " + work.getAssigned_to());
+                } else {
+                    holder.statusOfWOrk.setText("Pending");
+                }
+            }
+        } else{
+            holder.statusOfWOrk.setText("Unpublished");
+            holder.statusIcon.setBackgroundResource(R.drawable.circle_red);
+        }
     }
 
     @Override
@@ -73,7 +87,7 @@ public class WorksAvailableAdapter extends RecyclerView.Adapter<WorksAvailableAd
         return list.size();
     }
 
-    void setItemClickListener(ItemCLickListener itemClickListener) {
+    public void setItemClickListener(ItemCLickListener itemClickListener) {
         this.itemCLickListener = itemClickListener;
     }
 
@@ -83,12 +97,12 @@ public class WorksAvailableAdapter extends RecyclerView.Adapter<WorksAvailableAd
         ImageView categoryImageView;
         @BindView(R.id.work_description_text_view)
         TextView workDescriptionTextView;
-        @BindView(R.id.user_name_text_view)
-        TextView user_name;
-        @BindView(R.id.deadline)
-        TextView work_deadline;
-        @BindView(R.id.work_price)
-        TextView work_price_range;
+        @BindView(R.id.created_at_text_view)
+        TextView createdAtTextView;
+        @BindView(R.id.status_of_work)
+        TextView statusOfWOrk;
+        @BindView(R.id.status_icon)
+        ImageView statusIcon;
 
         ViewHolder(View view) {
             super(view);
@@ -105,6 +119,6 @@ public class WorksAvailableAdapter extends RecyclerView.Adapter<WorksAvailableAd
     }
 
     public interface ItemCLickListener {
-        void onItemClick(UniversalWork work);
+        void onItemClick(IndividualWork work);
     }
 }

@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="8dp"
-        tools:context=".WorkFormActivity">
+        tools:context=".userAccount.WorkFormActivity">
 
         <TextView
             android:layout_width="match_parent"
@@ -40,6 +40,7 @@
             android:id="@+id/choose_on_maps_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
             android:text="Choose on Maps"/>
 
         <TextView
@@ -128,6 +129,7 @@
                 android:id="@+id/date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
                 android:text="Pick deadline" />
 
             <TextView

@@ -1,12 +1,13 @@
-package soa.work.scheduler;
+package soa.work.scheduler.userAccount;
 
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,7 +22,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.api.GoogleApiActivity;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -45,18 +45,28 @@ import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import soa.work.scheduler.Retrofit.ApiService;
-import soa.work.scheduler.Retrofit.RetrofitClient;
-import soa.work.scheduler.models.AppStatus;
+import soa.work.scheduler.R;
+import soa.work.scheduler.retrofit.ApiService;
+import soa.work.scheduler.retrofit.RetrofitClient;
+import soa.work.scheduler.utilities.AppStatus;
+import soa.work.scheduler.utilities.DatePickerFragment;
+import soa.work.scheduler.utilities.OneSignal;
+import soa.work.scheduler.utilities.TimePickerFragment;
+import soa.work.scheduler.models.IndividualWork;
+import soa.work.scheduler.models.OneSignalIds;
+import soa.work.scheduler.models.UniversalWork;
 
-import static soa.work.scheduler.Constants.CURRENTLY_AVAILABLE_WORKS;
-import static soa.work.scheduler.Constants.LATITUDE;
-import static soa.work.scheduler.Constants.LOCALITY;
-import static soa.work.scheduler.Constants.LONGITUDE;
-import static soa.work.scheduler.Constants.USER_ACCOUNTS;
-import static soa.work.scheduler.Constants.WORKS_POSTED;
-import static soa.work.scheduler.Constants.WORK_CATEGORY;
+import static soa.work.scheduler.data.Constants.CURRENTLY_AVAILABLE_WORKS;
+import static soa.work.scheduler.data.Constants.LATITUDE;
+import static soa.work.scheduler.data.Constants.LOCALITY;
+import static soa.work.scheduler.data.Constants.LONGITUDE;
+import static soa.work.scheduler.data.Constants.NEAR_BY_RADIUS;
+import static soa.work.scheduler.data.Constants.UID;
+import static soa.work.scheduler.data.Constants.USER_ACCOUNTS;
+import static soa.work.scheduler.data.Constants.WORKS_POSTED;
+import static soa.work.scheduler.data.Constants.WORK_CATEGORY;
 
+@SuppressWarnings("FieldCanBeLocal")
 public class WorkFormActivity extends AppCompatActivity implements DatePickerFragment.DateDialogListener, TimePickerFragment.TimeDialogListener {
 
     @BindView(R.id.address_edit_text)
@@ -86,6 +96,9 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
     private static final int CHOOSE_ON_MAPS_REQUEST_CODE = 301;
     private String deadline, deadline_date, locality, latitude, longitude;
     private static final int ERROR_DIALOG_REQUEST = 9001;
+    private static final String TAG = "WorkFormActivity";
+    private FirebaseUser user;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,8 +108,11 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
         ButterKnife.bind(this);
 
         workCategory = getIntent().getStringExtra(WORK_CATEGORY);
-        getOneSignalKeys();
         addressEditTextLayout.setVisibility(View.GONE);
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Broadcasting");
+        progressDialog.setCancelable(false);
 
         appStatus = new AppStatus(this);
         button_date.setOnClickListener(arg0 -> {
@@ -132,7 +148,7 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == CHOOSE_ON_MAPS_REQUEST_CODE){
+        if (requestCode == CHOOSE_ON_MAPS_REQUEST_CODE) {
             if (resultCode == RESULT_OK && data != null) {
                 locality = data.getStringExtra(LOCALITY);
                 longitude = data.getStringExtra(LONGITUDE);
@@ -151,25 +167,22 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
                 deadline == null ||
                 deadline.trim().isEmpty() ||
                 priceRangeFromEditText.getText().toString().trim().isEmpty() ||
+                latitude.trim().isEmpty() ||
+                longitude.trim().isEmpty() ||
                 priceRangeToEditText.getText().toString().trim().isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (oneSignalAppId == null || oneSignalAppId.isEmpty() || oneSignalRestApiKey == null || oneSignalRestApiKey.isEmpty()) {
-            Toast.makeText(this, "Something went wrong. Please try again", Toast.LENGTH_SHORT).show();
-            getOneSignalKeys();
-            return;
-        }
 
+        progressDialog.show();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-
 
         //Saving work info to currently_available_works
         DatabaseReference currentlyAvailableWorksRef = database.getReference(CURRENTLY_AVAILABLE_WORKS);
         UniversalWork work = new UniversalWork();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.getDefault());
         String currentDateAndTime = sdf.format(new Date());
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        user = FirebaseAuth.getInstance().getCurrentUser();
         work.setAssigned_at("");
         work.setAssigned_to("");
         work.setAssigned_to_id("");
@@ -182,8 +195,8 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
         work.setWork_completed(false);
         work.setWork_deadline(deadline);
         work.setWork_description(workDescriptionEditText.getText().toString());
-        work.setLatitude("");
-        work.setLongitude("");
+        work.setLatitude(latitude);
+        work.setLongitude(longitude);
         if (user != null) {
             work.setWork_posted_by_account_id(user.getUid());
         }
@@ -209,68 +222,13 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
         individualWork.setAssigned_at("");
         individualWork.setWork_completed(false);
         individualWork.setWork_deadline(deadline);
-        individualWork.setWork_deleted(false);
-        individualWork.setWork_cancel(false);
-        individualWork.setWork_latitude("");
-        individualWork.setWork_longitude("");
+        individualWork.setIs_work_available(true);
+        individualWork.setWork_latitude(latitude);
+        individualWork.setWork_longitude(longitude);
 
         if (user != null) {
             userAccountsRef.child(user.getUid()).child(WORKS_POSTED).child(user.getUid() + "-" + currentDateAndTime).setValue(individualWork);
-        }
-
-        AsyncTask.execute(this::sendNotification);
-
-        Toast.makeText(this, "Broadcast complete", Toast.LENGTH_SHORT).show();
-        finish();
-    }
-
-    private void sendNotification() {
-        try {
-            String jsonResponse;
-
-            URL url = new URL("https://onesignal.com/api/v1/notifications");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setUseCaches(false);
-            con.setDoOutput(true);
-            con.setDoInput(true);
-
-            con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            con.setRequestProperty("Authorization", "Basic " + oneSignalRestApiKey);
-            con.setRequestMethod("POST");
-
-            String strJsonBody = "{"
-                    + "\"app_id\": \"" + oneSignalAppId + "\","
-                    + "\"filters\": [{\"field\": \"tag\", \"key\": \"" + WORK_CATEGORY + "\", \"relation\": \"=\", \"value\": \"" + workCategory + "\"},{\"operator\": \"OR\"},{\"field\": \"amount_spent\", \"relation\": \">\",\"value\": \"0\"}],"
-                    + "\"data\": {\"foo\": \"bar\"},"
-                    + "\"contents\": {\"en\": \"A new work is available at " + addressEditText.getText().toString() + "\"}"
-                    + "}";
-
-
-            System.out.println("strJsonBody:\n" + strJsonBody);
-
-            byte[] sendBytes = strJsonBody.getBytes(StandardCharsets.UTF_8);
-            con.setFixedLengthStreamingMode(sendBytes.length);
-
-            OutputStream outputStream = con.getOutputStream();
-            outputStream.write(sendBytes);
-
-            int httpResponse = con.getResponseCode();
-            System.out.println("httpResponse: " + httpResponse);
-
-            if (httpResponse >= HttpURLConnection.HTTP_OK
-                    && httpResponse < HttpURLConnection.HTTP_BAD_REQUEST) {
-                Scanner scanner = new Scanner(con.getInputStream(), "UTF-8");
-                jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
-                scanner.close();
-            } else {
-                Scanner scanner = new Scanner(con.getErrorStream(), "UTF-8");
-                jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
-                scanner.close();
-            }
-            System.out.println("jsonResponse:\n" + jsonResponse);
-
-        } catch (Throwable t) {
-            t.printStackTrace();
+            getOneSignalKeys();
         }
     }
 
@@ -288,6 +246,18 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
                         assert response.body() != null;
                         oneSignalAppId = response.body().getOnesignalAppId();
                         oneSignalRestApiKey = response.body().getRestApiKey();
+                        String jsonBody = "{" +
+                                "\"app_id\": \"" + oneSignalAppId + "\"," +
+                                "\"filters\": [" +
+                                "{\"field\": \"tag\", \"key\": \"" + WORK_CATEGORY + "\", \"relation\": \"=\", \"value\": \"" + workCategory + "\"}," +
+                                "{\"field\": \"location\",\"radius\": \"" + (int) NEAR_BY_RADIUS + "\",\"lat\" : \"" + latitude + "\",\"long\" :\"" + longitude + "\"}," +
+                                "{\"field\": \"tag\", \"key\": \"" + UID + "\", \"relation\": \"!=\", \"value\": \"" + user.getUid() + "\"}]," +
+                                "\"contents\": {\"en\": \"A new work is available at " + addressEditText.getText().toString() + "\"}" +
+                                "}";
+                        AsyncTask.execute(() -> OneSignal.sendNotification(oneSignalRestApiKey, jsonBody));
+                        Toast.makeText(WorkFormActivity.this, "Broadcast complete", Toast.LENGTH_SHORT).show();
+                        finish();
+
                     }
                 }
 
@@ -312,9 +282,9 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
         if (item.getItemId() == R.id.send_work_menu_item) {
             if (appStatus.isOnline())
                 broadcast();
-             else
+            else
                 Toast.makeText(this, "Please check your internet connection!", Toast.LENGTH_SHORT).show();
-             return true;
+            return true;
         } else if (item.getItemId() == android.R.id.home) {
             super.onBackPressed();
             return true;

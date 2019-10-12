@@ -1,4 +1,4 @@
-package soa.work.scheduler;
+package soa.work.scheduler.utilities;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -13,6 +13,8 @@ import androidx.fragment.app.DialogFragment;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import soa.work.scheduler.R;
 
 public class DatePickerFragment extends DialogFragment {
 

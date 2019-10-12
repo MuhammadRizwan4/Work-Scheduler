@@ -16,32 +16,34 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MapsActivity"/>
-        <activity android:name=".WorkDetailsActivityForUser" />
-        <activity
-            android:name=".WorkDetailsActivity"
+        <activity android:name=".userAccount.MapsActivity"/>
+        <activity android:name=".userAccount.WorkDetailsActivityForUser"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".userAccount.WorksHistoryActivity"/>
         <activity
-            android:name=".WorksHistoryActivity"
+            android:name=".workerAccount.WorkDetailsActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".userAccount.MainActivity" />
         <activity
-            android:name=".WorkersActivity"
+            android:name=".userAccount.WorksHistoryActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:parentActivityName=".userAccount.MainActivity" />
         <activity
-            android:name=".WorkFormActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:parentActivityName=".MainActivity" />
-        <activity
-            android:name=".MainActivity"
+            android:name=".workerAccount.WorkersActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".ChooseWorkCategoryActivity"
+            android:name=".userAccount.WorkFormActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName=".userAccount.MainActivity" />
+        <activity
+            android:name=".userAccount.MainActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".workerAccount.ChooseWorkCategoryActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:parentActivityName=".userAccount.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".LoginActivity"

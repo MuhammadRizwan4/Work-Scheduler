@@ -1,4 +1,4 @@
-package soa.work.scheduler;
+package soa.work.scheduler.models;
 
 public class IndividualWork {
     private String work_category;
@@ -14,8 +14,7 @@ public class IndividualWork {
     private String work_deadline;
     private String price_range_from;
     private String price_range_to;
-    private boolean work_deleted;
-    private boolean work_cancel;
+    private boolean is_work_available;
     private String work_latitude;
     private String work_longitude;
 
@@ -38,20 +37,12 @@ public class IndividualWork {
         this.work_longitude = work_longitude;
     }
 
-    public boolean getWork_cancel() {
-        return work_cancel;
+    public boolean getIs_work_available() {
+        return is_work_available;
     }
 
-    public void setWork_cancel(boolean work_cancel) {
-        this.work_cancel = work_cancel;
-    }
-
-    public boolean getWork_deleted() {
-        return work_deleted;
-    }
-
-    public void setWork_deleted(boolean work_deleted) {
-        this.work_deleted = work_deleted;
+    public void setIs_work_available(boolean is_work_available) {
+        this.is_work_available = is_work_available;
     }
 
     public String getPrice_range_from() {

@@ -1,15 +1,15 @@
-package soa.work.scheduler;
+package soa.work.scheduler.models;
 
 public class Category {
     private String categoryTitle;
     private int categoryImage;
 
-    Category(String categoryTitle, int categoryImage) {
+    public Category(String categoryTitle, int categoryImage) {
         this.categoryTitle = categoryTitle;
         this.categoryImage = categoryImage;
     }
 
-    String getCategoryTitle() {
+    public String getCategoryTitle() {
         return categoryTitle;
     }
 
@@ -17,7 +17,7 @@ public class Category {
         this.categoryTitle = categoryTitle;
     }
 
-    int getCategoryImage() {
+    public int getCategoryImage() {
         return categoryImage;
     }
 

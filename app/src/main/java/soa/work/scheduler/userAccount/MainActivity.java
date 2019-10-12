@@ -1,6 +1,9 @@
-package soa.work.scheduler;
+package soa.work.scheduler.userAccount;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
@@ -14,12 +17,18 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -34,15 +43,23 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import soa.work.scheduler.CategoryRecyclerViewAdapter;
+import soa.work.scheduler.workerAccount.ChooseWorkCategoryActivity;
+import soa.work.scheduler.LoginActivity;
+import soa.work.scheduler.utilities.PrefManager;
+import soa.work.scheduler.R;
+import soa.work.scheduler.models.UserAccount;
+import soa.work.scheduler.workerAccount.WorkersActivity;
+import soa.work.scheduler.models.Category;
 
-import static soa.work.scheduler.Constants.CARPENTER;
-import static soa.work.scheduler.Constants.ELECTRICIAN;
-import static soa.work.scheduler.Constants.MECHANIC;
-import static soa.work.scheduler.Constants.PAINTER;
-import static soa.work.scheduler.Constants.PLUMBER;
-import static soa.work.scheduler.Constants.USER_ACCOUNT;
-import static soa.work.scheduler.Constants.USER_ACCOUNTS;
-import static soa.work.scheduler.Constants.WORK_CATEGORY;
+import static soa.work.scheduler.data.Constants.CARPENTER;
+import static soa.work.scheduler.data.Constants.ELECTRICIAN;
+import static soa.work.scheduler.data.Constants.MECHANIC;
+import static soa.work.scheduler.data.Constants.PAINTER;
+import static soa.work.scheduler.data.Constants.PLUMBER;
+import static soa.work.scheduler.data.Constants.USER_ACCOUNT;
+import static soa.work.scheduler.data.Constants.USER_ACCOUNTS;
+import static soa.work.scheduler.data.Constants.WORK_CATEGORY;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -60,6 +77,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private FirebaseUser currentUser;
     private FirebaseDatabase firebaseDatabase;
     private ArrayList<Category> categories = new ArrayList<>();
+    private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
+    private static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 4321;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    public static final String IS_ACCOUNT_DELETED = "is_account_deleted";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +98,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         new PrefManager(this).setLastOpenedActivity(USER_ACCOUNT);
 
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        getLocationPermission();
 
         updateAccountSwitcherNavItem();
         setupAccountHeader();
@@ -134,21 +158,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 UserAccount userAccount = dataSnapshot.getValue(UserAccount.class);
                 dummyItem.setVisible(false);
-                if (!userAccount.getWork_category().isEmpty()) {
-                    OneSignal.sendTag(WORK_CATEGORY, userAccount.getWork_category());
+                if (userAccount == null) {
+                    Toast.makeText(MainActivity.this, "Looks like your account has been deleted", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    intent.putExtra(IS_ACCOUNT_DELETED, true);
+                    startActivity(intent);
+                    finish();
+                    return;
                 }
-                if (userAccount != null && userAccount.getWork_category() != null) {
-                    if (userAccount.getWork_category().equals("false")) {
-                        setupWorkerAccountItem.setVisible(true);
-                        switchToWorkerAccountItem.setVisible(false);
-                    } else {
-                        setupWorkerAccountItem.setVisible(false);
-                        switchToWorkerAccountItem.setVisible(true);
-                    }
-                } else {
-                    Toast.makeText(MainActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
-                    setupWorkerAccountItem.setVisible(false);
+
+                if (userAccount.getWork_category() == null || userAccount.getWork_category().equals("false")) {
+                    setupWorkerAccountItem.setVisible(true);
                     switchToWorkerAccountItem.setVisible(false);
+                    return;
+                }
+
+                if (!userAccount.getWork_category().isEmpty() && !userAccount.getWork_category().equals("false")) {
+                    OneSignal.sendTag(WORK_CATEGORY, userAccount.getWork_category());
+                    setupWorkerAccountItem.setVisible(false);
+                    switchToWorkerAccountItem.setVisible(true);
                 }
             }
 
@@ -203,6 +231,64 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             default:
                 drawerLayout.closeDrawer(GravityCompat.START);
                 return false;
+        }
+    }
+
+    private void getLocationPermission() {
+        String[] permissions = {FINE_LOCATION, COARSE_LOCATION};
+
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                    COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                //We have location permission
+                sendDeviceLocationToOneSignal();
+
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        permissions,
+                        LOCATION_PERMISSION_REQUEST_CODE);
+            }
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    permissions,
+                    LOCATION_PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    private void sendDeviceLocationToOneSignal() {
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        try {
+            Task location = fusedLocationProviderClient.getLastLocation();
+            location.addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Location currentLocation = (Location) task.getResult();
+                    OneSignal.sendTag("longitude", String.valueOf(currentLocation.getLongitude()));
+                    OneSignal.sendTag("latitude", String.valueOf(currentLocation.getLatitude()));
+                }
+            });
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0) {
+                for (int grantResult : grantResults) {
+                    if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                        Snackbar snackbar = Snackbar.make(drawerLayout, "You cannot receive notification without location permission", Snackbar.LENGTH_LONG);
+                        snackbar.setAction("Allow Permission", view -> ActivityCompat.requestPermissions(MainActivity.this,
+                                permissions,
+                                LOCATION_PERMISSION_REQUEST_CODE));
+                        snackbar.show();
+                        return;
+                    }
+                }
+                sendDeviceLocationToOneSignal();
+            }
         }
     }
 }

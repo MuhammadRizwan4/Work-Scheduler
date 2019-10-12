@@ -1,4 +1,4 @@
-package soa.work.scheduler;
+package soa.work.scheduler.models;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

@@ -1,4 +1,4 @@
-package soa.work.scheduler;
+package soa.work.scheduler.utilities;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -9,6 +9,8 @@ import android.widget.TimePicker;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+
+import soa.work.scheduler.R;
 
 public class TimePickerFragment extends DialogFragment {
 

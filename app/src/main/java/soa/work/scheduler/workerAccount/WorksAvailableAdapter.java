@@ -1,12 +1,12 @@
-package soa.work.scheduler;
+package soa.work.scheduler.workerAccount;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,20 +15,22 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import soa.work.scheduler.R;
+import soa.work.scheduler.models.UniversalWork;
 
-import static soa.work.scheduler.Constants.CARPENTER;
-import static soa.work.scheduler.Constants.ELECTRICIAN;
-import static soa.work.scheduler.Constants.MECHANIC;
-import static soa.work.scheduler.Constants.PAINTER;
-import static soa.work.scheduler.Constants.PLUMBER;
+import static soa.work.scheduler.data.Constants.CARPENTER;
+import static soa.work.scheduler.data.Constants.ELECTRICIAN;
+import static soa.work.scheduler.data.Constants.MECHANIC;
+import static soa.work.scheduler.data.Constants.PAINTER;
+import static soa.work.scheduler.data.Constants.PLUMBER;
 
-public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapter.ViewHolder> {
+public class WorksAvailableAdapter extends RecyclerView.Adapter<WorksAvailableAdapter.ViewHolder> {
 
     private ItemCLickListener itemCLickListener;
-    private List<IndividualWork> list;
-    private IndividualWork work;
+    private List<UniversalWork> list;
     private Context mContext;
-    WorksHistoryAdapter(List<IndividualWork> list, Context mContext) {
+
+    public WorksAvailableAdapter(List<UniversalWork> list, Context mContext) {
         this.list = list;
         this.mContext = mContext;
     }
@@ -36,16 +38,18 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.history_item_layout, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.work_available_layout, parent, false);
         return new ViewHolder(view);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        work = list.get(position);
+        UniversalWork work = list.get(position);
+        holder.user_name.setText(work.getWork_posted_by_name());
         holder.workDescriptionTextView.setText("Description: " + work.getWork_description());
-        holder.createdAtTextView.setText("Posted at: " + work.getCreated_date());
-
+        holder.work_deadline.setText("Deadline: " + work.getWork_deadline());
+        holder.work_price_range.setText("Rs." + work.getPrice_range_from() + " - " + "Rs." + work.getPrice_range_to());
         switch (work.getWork_category()) {
             case PAINTER:
                 holder.categoryImageView.setImageResource(R.drawable.ic_painter);
@@ -63,25 +67,6 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
                 holder.categoryImageView.setImageResource(R.drawable.ic_electrician);
         }
 
-        if (work.getWork_completed()) {
-            holder.completedStatusTextView.setText("Status: Completed");
-        } else {
-            holder.completedStatusTextView.setText("Status: Not Completed");
-        }
-
-        if (work.getAssigned_to() != null && !work.getAssigned_to().isEmpty()) {
-            holder.assignedToTextView.setText("Assigned to: " + work.getAssigned_to());
-        } else {
-            holder.assignedToTextView.setText("Not Assigned");
-        }
-
-        if (work.getWork_deleted()){
-            holder.status.setVisibility(View.VISIBLE);
-            holder.status.setBackgroundResource(R.drawable.delete);
-        } else if (work.getWork_cancel()){
-            holder.status.setVisibility(View.VISIBLE);
-            holder.status.setBackgroundResource(R.drawable.cancelled);
-        }
     }
 
     @Override
@@ -89,7 +74,7 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
         return list.size();
     }
 
-    void setItemClickListener(ItemCLickListener itemClickListener) {
+    public void setItemClickListener(ItemCLickListener itemClickListener) {
         this.itemCLickListener = itemClickListener;
     }
 
@@ -99,14 +84,12 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
         ImageView categoryImageView;
         @BindView(R.id.work_description_text_view)
         TextView workDescriptionTextView;
-        @BindView(R.id.created_at_text_view)
-        TextView createdAtTextView;
-        @BindView(R.id.completed_status_text_view)
-        TextView completedStatusTextView;
-        @BindView(R.id.assigned_to_text_view)
-        TextView assignedToTextView;
-        @BindView(R.id.status)
-        ImageView status;
+        @BindView(R.id.user_name_text_view)
+        TextView user_name;
+        @BindView(R.id.deadline)
+        TextView work_deadline;
+        @BindView(R.id.work_price)
+        TextView work_price_range;
 
         ViewHolder(View view) {
             super(view);
@@ -123,6 +106,6 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
     }
 
     public interface ItemCLickListener {
-        void onItemClick(IndividualWork work);
+        void onItemClick(UniversalWork work);
     }
 }

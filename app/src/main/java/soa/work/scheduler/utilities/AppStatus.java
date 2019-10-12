@@ -1,4 +1,4 @@
-package soa.work.scheduler.models;
+package soa.work.scheduler.utilities;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

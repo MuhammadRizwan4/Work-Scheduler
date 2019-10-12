@@ -1,9 +1,8 @@
-package soa.work.scheduler;
+package soa.work.scheduler.workerAccount;
 
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.InputType;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -38,18 +37,22 @@ import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import soa.work.scheduler.Retrofit.ApiService;
-import soa.work.scheduler.Retrofit.RetrofitClient;
+import soa.work.scheduler.R;
+import soa.work.scheduler.retrofit.ApiService;
+import soa.work.scheduler.retrofit.RetrofitClient;
+import soa.work.scheduler.models.OneSignalIds;
+import soa.work.scheduler.models.UniversalWork;
+import soa.work.scheduler.models.UserAccount;
 
-import static soa.work.scheduler.Constants.CURRENTLY_AVAILABLE_WORKS;
-import static soa.work.scheduler.Constants.UID;
-import static soa.work.scheduler.Constants.USER_ACCOUNTS;
-import static soa.work.scheduler.Constants.WORKER_PHONE_NUMBER;
-import static soa.work.scheduler.Constants.WORKS_POSTED;
-import static soa.work.scheduler.Constants.WORK_ASSIGNED_AT;
-import static soa.work.scheduler.Constants.WORK_ASSIGNED_TO;
-import static soa.work.scheduler.Constants.WORK_ASSIGNED_TO_ID;
-import static soa.work.scheduler.Constants.WORK_CANCEL;
+import static soa.work.scheduler.data.Constants.CURRENTLY_AVAILABLE_WORKS;
+import static soa.work.scheduler.data.Constants.UID;
+import static soa.work.scheduler.data.Constants.USER_ACCOUNTS;
+import static soa.work.scheduler.data.Constants.WORKER_PHONE_NUMBER;
+import static soa.work.scheduler.data.Constants.WORKS_POSTED;
+import static soa.work.scheduler.data.Constants.WORK_ASSIGNED_AT;
+import static soa.work.scheduler.data.Constants.WORK_ASSIGNED_TO;
+import static soa.work.scheduler.data.Constants.WORK_ASSIGNED_TO_ID;
+import static soa.work.scheduler.data.Constants.WORK_CANCEL;
 
 public class WorkDetailsActivity extends AppCompatActivity {
 
