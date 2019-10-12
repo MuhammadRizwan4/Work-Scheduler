@@ -19,6 +19,8 @@ import com.onesignal.OneSignal;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -79,7 +81,7 @@ public class ChooseWorkCategoryActivity extends AppCompatActivity  {
         alertDialog.setPositiveButton("DONE",
                 (dialog, which) -> {
                     String phoneNumber = input.getText().toString();
-                    if (phoneNumber.length() < 10) {
+                    if (phoneNumber.length() != 10) {
                         Toast.makeText(ChooseWorkCategoryActivity.this, "Phone number is not valid", Toast.LENGTH_SHORT).show();
                         askPhoneNumber(category);
                     } else {

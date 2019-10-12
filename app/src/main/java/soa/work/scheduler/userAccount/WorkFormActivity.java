@@ -39,6 +39,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -123,9 +125,13 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
         chooseOnMapsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (isServicesOK()) {
-                    Intent intent = new Intent(WorkFormActivity.this, MapsActivity.class);
-                    startActivityForResult(intent, CHOOSE_ON_MAPS_REQUEST_CODE);
+                if (!appStatus.isOnline()){
+                    Toast.makeText(WorkFormActivity.this, "Please check your internet connection!", Toast.LENGTH_SHORT).show();
+                } else {
+                    if (isServicesOK()) {
+                        Intent intent = new Intent(WorkFormActivity.this, MapsActivity.class);
+                        startActivityForResult(intent, CHOOSE_ON_MAPS_REQUEST_CODE);
+                    }
                 }
             }
         });
@@ -155,24 +161,26 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
                 latitude = data.getStringExtra(LATITUDE);
                 addressEditTextLayout.setVisibility(View.VISIBLE);
                 addressEditText.setText(locality);
+            } else if (data == null){
+                Toast.makeText(this, "Address can't be empty.Please try again", Toast.LENGTH_SHORT).show();
             }
         }
     }
-
     private void broadcast() {
         //Toast.makeText(this, date1, Toast.LENGTH_SHORT).show();
         if (addressEditText.getText().toString().trim().isEmpty() ||
                 phoneNumberEditText.getText().toString().trim().isEmpty() ||
                 workDescriptionEditText.getText().toString().trim().isEmpty() ||
+                phoneNumberEditText.getText().toString().length() != 10 ||
                 deadline == null ||
                 deadline.trim().isEmpty() ||
                 priceRangeFromEditText.getText().toString().trim().isEmpty() ||
                 latitude.trim().isEmpty() ||
                 longitude.trim().isEmpty() ||
                 priceRangeToEditText.getText().toString().trim().isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-            return;
-        }
+                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
         progressDialog.show();
         FirebaseDatabase database = FirebaseDatabase.getInstance();

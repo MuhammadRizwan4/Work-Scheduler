@@ -1,10 +1,15 @@
 package soa.work.scheduler.workerAccount;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.media.Image;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -43,6 +48,7 @@ import soa.work.scheduler.retrofit.RetrofitClient;
 import soa.work.scheduler.models.OneSignalIds;
 import soa.work.scheduler.models.UniversalWork;
 import soa.work.scheduler.models.UserAccount;
+import soa.work.scheduler.userAccount.WorkDetailsActivityForUser;
 
 import static soa.work.scheduler.data.Constants.CURRENTLY_AVAILABLE_WORKS;
 import static soa.work.scheduler.data.Constants.UID;
@@ -72,6 +78,8 @@ public class WorkDetailsActivity extends AppCompatActivity {
     EditText deadlineTextView;
     @BindView(R.id.work_description_text_view)
     EditText workDescriptionTextView;
+    @BindView(R.id.call_icon)
+    ImageView call_user;
 
     private FirebaseUser currentUser;
     private String created_date, work_posted_by_account_id;
@@ -80,6 +88,7 @@ public class WorkDetailsActivity extends AppCompatActivity {
     private boolean is_assignned;
     private String account_id;
     private String created_Date;
+    private String user_phonenum;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -108,6 +117,8 @@ public class WorkDetailsActivity extends AppCompatActivity {
             work_posted_by_account_id = (String) bundle.get("work_posted_by_account_id");
         }
         DatabaseReference currentWork = database.getReference(CURRENTLY_AVAILABLE_WORKS).child(work_posted_by_account_id + "-" + created_date);
+        DatabaseReference individualWork = database.getReference(USER_ACCOUNTS).child(work_posted_by_account_id).
+        child(WORKS_POSTED).child(work_posted_by_account_id + "-" + created_date);
         currentWork.addListenerForSingleValueEvent(new ValueEventListener() {
             @SuppressLint("ResourceAsColor")
             @Override
@@ -121,6 +132,7 @@ public class WorkDetailsActivity extends AppCompatActivity {
                 deadlineTextView.setText(work.getWork_deadline());
                 account_id = work.getWork_posted_by_account_id();
                 created_Date = work.getCreated_date();
+                user_phonenum = work.getUser_phone();
                 workDescriptionTextView.setText(work.getWork_description());
                 if (work.getAssigned_to_id().equals(currentUser.getUid())) {
                     acceptWorkButton.setText("CANCEL WORK");
@@ -183,19 +195,33 @@ public class WorkDetailsActivity extends AppCompatActivity {
                         .setMessage("Are you sure want to cancel?")
                         .setCancelable(true)
                         .setPositiveButton("YES", (dialog, which) -> {
-                            DatabaseReference cancel_work = database.getReference(USER_ACCOUNTS).child(account_id).child(WORKS_POSTED)
-                                    .child(account_id +"-"+ created_Date).child(WORK_CANCEL);
-                            cancel_work.setValue(true);
                             /**
                              * FIXME Send notification here
                              */
-                            currentWork.removeValue();
-                            Toast.makeText(this, "cancelled", Toast.LENGTH_SHORT).show();
+                            currentWork.child(WORK_ASSIGNED_TO_ID).setValue("");
+                            currentWork.child(WORK_ASSIGNED_TO).setValue("");
+                            currentWork.child(WORK_ASSIGNED_AT).setValue("");
+                            individualWork.child(WORK_ASSIGNED_TO_ID).setValue("");
+                            individualWork.child(WORK_ASSIGNED_TO).setValue("");
+                            individualWork.child(WORK_ASSIGNED_AT).setValue("");
+                            acceptWorkButton.setEnabled(false);
+                            acceptWorkButton.setText("WORK CANCELLED");
+
 
                         })
                         .setNegativeButton("NO", (dialog, which) -> {
                             dialog.dismiss();
                         }).create().show();
+            }
+        });
+
+        call_user.setOnClickListener(view -> {
+            if (user_phonenum != null && !user_phonenum.isEmpty()) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + user_phonenum));
+                startActivity(intent);
+            } else {
+                Toast.makeText(WorkDetailsActivity.this, "Can't make a call", Toast.LENGTH_SHORT).show();
             }
         });
     }

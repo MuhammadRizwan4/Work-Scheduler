@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -27,12 +26,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Scanner;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit2.Call;
@@ -41,20 +34,16 @@ import retrofit2.Response;
 import soa.work.scheduler.R;
 import soa.work.scheduler.models.IndividualWork;
 import soa.work.scheduler.models.OneSignalIds;
-import soa.work.scheduler.models.UniversalWork;
 import soa.work.scheduler.retrofit.ApiService;
 import soa.work.scheduler.retrofit.RetrofitClient;
 import soa.work.scheduler.utilities.OneSignal;
-import soa.work.scheduler.workerAccount.WorkDetailsActivity;
 
 import static soa.work.scheduler.data.Constants.CURRENTLY_AVAILABLE_WORKS;
 import static soa.work.scheduler.data.Constants.IS_WORK_AVAILABLE;
-import static soa.work.scheduler.data.Constants.NEAR_BY_RADIUS;
 import static soa.work.scheduler.data.Constants.PHONE_NUMBER;
 import static soa.work.scheduler.data.Constants.UID;
 import static soa.work.scheduler.data.Constants.USER_ACCOUNTS;
 import static soa.work.scheduler.data.Constants.WORKS_POSTED;
-import static soa.work.scheduler.data.Constants.WORK_CATEGORY;
 
 public class WorkDetailsActivityForUser extends AppCompatActivity {
 
@@ -166,17 +155,19 @@ public class WorkDetailsActivityForUser extends AppCompatActivity {
                             unPublishButton.setVisibility(View.GONE);
                         } else {
 
-                            markAsCompletedButton.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    Toast.makeText(WorkDetailsActivityForUser.this, "Marked as completed", Toast.LENGTH_SHORT).show();
-                                    markAsCompletedButton.setText("Work Completed");
-                                    markAsCompletedButton.setEnabled(false);
-                                    currentWorkInCurrentlyAvailableWorks.child("work_completed").setValue(true);
-                                    currentWorkInHistory.child("work_completed").setValue(true);
-                                    unPublishButton.setVisibility(View.GONE);
-                                }
-                            });
+                            markAsCompletedButton.setOnClickListener(v -> new AlertDialog.Builder(WorkDetailsActivityForUser.this)
+                                    .setMessage("Are you sure want to mark work as Completed?")
+                                    .setCancelable(false)
+                                    .setPositiveButton("YES", (dialog, which) -> {
+                                        Toast.makeText(WorkDetailsActivityForUser.this, "Marked as completed", Toast.LENGTH_SHORT).show();
+                                        markAsCompletedButton.setText("Work Completed");
+                                        markAsCompletedButton.setEnabled(false);
+                                        currentWorkInCurrentlyAvailableWorks.child("work_completed").setValue(true);
+                                        currentWorkInHistory.child("work_completed").setValue(true);
+                                        unPublishButton.setVisibility(View.GONE);
+                                    })
+                                    .setNegativeButton("NO", (dialog, which) -> dialog.dismiss())
+                                    .create().show());
                         }
                     } else {
                         unPublishButton.setVisibility(View.VISIBLE);
@@ -236,7 +227,6 @@ public class WorkDetailsActivityForUser extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
 
 
     private void getOneSignalKeys() {

@@ -7,9 +7,16 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -23,11 +30,13 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,6 +55,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     FloatingActionButton doneButton;
     @BindView(R.id.root_view)
     RelativeLayout rootView;
+    @BindView(R.id.input_search)
+    AutoCompleteTextView input_search;
+    @BindView(R.id.ic_gps)
+    ImageView map_gps;
+
     private SupportMapFragment mapFragment;
     private GoogleMap mMap;
     private GoogleMap.OnCameraIdleListener onCameraIdleListener;
@@ -56,6 +70,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private boolean hasLocationPermission = false;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
+    private PlaceAutocompleteAdapter placeAutocompleteAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +86,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
-
+        search();
 
         //Listener for camera idle state and gets details of location
         onCameraIdleListener = () -> {
@@ -98,14 +113,61 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         };
 
         doneButton.setOnClickListener(view -> {
-            Intent intent = new Intent();
-            intent.putExtra(LOCALITY, locality);
-            intent.putExtra(LONGITUDE, longitude);
-            intent.putExtra(LATITUDE, latitude);
+            if (locality != null) {
+                Intent intent = new Intent();
+                intent.putExtra(LOCALITY, locality);
+                intent.putExtra(LONGITUDE, longitude);
+                intent.putExtra(LATITUDE, latitude);
 
-            setResult(RESULT_OK, intent);
-            finish();
+                setResult(RESULT_OK, intent);
+                finish();
+            } else {
+                Toast.makeText(this, "Please check your internet connection!", Toast.LENGTH_SHORT).show();
+            }
         });
+
+    }
+
+    private void search (){
+        input_search.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionID, KeyEvent keyEvent) {
+                if (actionID == EditorInfo.IME_ACTION_SEARCH || actionID == EditorInfo.IME_ACTION_DONE ||
+                    keyEvent.getAction() == KeyEvent.ACTION_DOWN ||
+                    keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
+                    getLocate();
+                }
+
+                return false;
+            }
+        });
+        hideSoftKeyboard();
+
+        map_gps.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getDeviceLocation();
+            }
+        });
+    }
+
+    private void getLocate(){
+        String searchString = input_search.getText().toString();
+        Geocoder geocoder = new Geocoder((MapsActivity.this));
+        List<Address> list = new ArrayList<>();
+
+        try {
+            list = geocoder.getFromLocationName(searchString, 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (list.size() > 0){
+            Address address = list.get(0);
+
+           // Toast.makeText(this, address.toString(), Toast.LENGTH_SHORT).show();
+            moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), DEFAULT_ZOOM, address.getAddressLine(0));
+        }
 
     }
 
@@ -159,7 +221,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 location.addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Location currentLocation = (Location) task.getResult();
-                        moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), DEFAULT_ZOOM);
+                        moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), DEFAULT_ZOOM, "My location");
                         mMap.setMyLocationEnabled(true);
                     }
                 });
@@ -169,8 +231,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private void moveCamera(LatLng latLng, float zoom) {
+    private void moveCamera(LatLng latLng, float zoom, String title) {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+
+        if (!title.equals("My location")) {
+            MarkerOptions options = new MarkerOptions()
+                    .position(latLng)
+                    .title(title);
+            mMap.addMarker(options);
+        }
+        hideSoftKeyboard();
     }
 
 
@@ -186,5 +256,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void removeStatusBarTranslucent() {
         //getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+    }
+
+    private void hideSoftKeyboard(){
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 }

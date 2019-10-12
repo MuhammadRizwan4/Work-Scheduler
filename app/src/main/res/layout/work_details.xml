@@ -142,9 +142,7 @@
                         android:id="@+id/user_phone_number"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:autoLink="phone"
-                        android:inputType="none"
-                        android:linksClickable="true" />
+                        android:inputType="none" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
