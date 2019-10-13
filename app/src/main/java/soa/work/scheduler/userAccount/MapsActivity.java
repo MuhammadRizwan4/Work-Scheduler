@@ -7,12 +7,8 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
-import android.view.KeyEvent;
-import android.view.View;
+import android.util.Log;
 import android.view.WindowManager;
-import android.view.inputmethod.EditorInfo;
-import android.widget.AutoCompleteTextView;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -22,7 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
-
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -32,11 +28,17 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -47,7 +49,7 @@ import static soa.work.scheduler.data.Constants.LOCALITY;
 import static soa.work.scheduler.data.Constants.LONGITUDE;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
 
     @BindView(R.id.drag_result)
     TextView dragResultText;
@@ -55,8 +57,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     FloatingActionButton doneButton;
     @BindView(R.id.root_view)
     RelativeLayout rootView;
-    @BindView(R.id.input_search)
-    AutoCompleteTextView input_search;
     @BindView(R.id.ic_gps)
     ImageView map_gps;
 
@@ -70,7 +70,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private boolean hasLocationPermission = false;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
-    private PlaceAutocompleteAdapter placeAutocompleteAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,30 +128,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void search (){
-        input_search.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int actionID, KeyEvent keyEvent) {
-                if (actionID == EditorInfo.IME_ACTION_SEARCH || actionID == EditorInfo.IME_ACTION_DONE ||
-                    keyEvent.getAction() == KeyEvent.ACTION_DOWN ||
-                    keyEvent.getAction() == KeyEvent.KEYCODE_ENTER){
-                    getLocate();
+        Places.initialize(getApplicationContext(), "AIzaSyDxlNwc0KqZFIvu-mh2lwxVejeZeXAOsR8");
+        // Create a new Places client instance.
+        PlacesClient placesClient = Places.createClient(this);
+
+        // Initialize the AutocompleteSupportFragment.
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+
+        // Specify the types of place data to return.
+        if (autocompleteFragment != null) {
+            autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+        }
+
+        // Set up a PlaceSelectionListener to handle the response.
+        if (autocompleteFragment != null) {
+            autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+                @Override
+                public void onPlaceSelected(@NonNull Place place) {
+                    // TODO: Get info about the selected place.
+                    getLocate(place.getName());
+                    Log.i("Places", "Place: " + place.getName() + ", " + place.getId());
                 }
 
-                return false;
-            }
-        });
-        hideSoftKeyboard();
-
-        map_gps.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getDeviceLocation();
-            }
-        });
+                @Override
+                public void onError(@NonNull Status status) {
+                    // TODO: Handle the error.
+                    Log.i("Places", "An error occurred: " + status);
+                }
+            });
+        }
+        map_gps.setOnClickListener(view -> getDeviceLocation());
     }
 
-    private void getLocate(){
-        String searchString = input_search.getText().toString();
+    private void getLocate(String searchString){
         Geocoder geocoder = new Geocoder((MapsActivity.this));
         List<Address> list = new ArrayList<>();
 
@@ -164,9 +173,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if (list.size() > 0){
             Address address = list.get(0);
-
-           // Toast.makeText(this, address.toString(), Toast.LENGTH_SHORT).show();
-            moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), DEFAULT_ZOOM, address.getAddressLine(0));
+            moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), address.getAddressLine(0));
         }
 
     }
@@ -212,6 +219,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+
     private void getDeviceLocation() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -221,7 +229,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 location.addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Location currentLocation = (Location) task.getResult();
-                        moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), DEFAULT_ZOOM, "My location");
+                        moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), "My location");
                         mMap.setMyLocationEnabled(true);
                     }
                 });
@@ -231,8 +239,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private void moveCamera(LatLng latLng, float zoom, String title) {
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+    private void moveCamera(LatLng latLng, String title) {
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, MapsActivity.DEFAULT_ZOOM));
 
         if (!title.equals("My location")) {
             MarkerOptions options = new MarkerOptions()
@@ -240,7 +248,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .title(title);
             mMap.addMarker(options);
         }
-        hideSoftKeyboard();
     }
 
 
@@ -258,7 +265,4 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
     }
 
-    private void hideSoftKeyboard(){
-        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-    }
 }

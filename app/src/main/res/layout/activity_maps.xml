@@ -51,6 +51,7 @@
         app:elevation="4dp"
         app:srcCompat="@drawable/ic_done" />
 
+
     <RelativeLayout
         android:id="@+id/rlayout"
         android:layout_width="match_parent"
@@ -61,31 +62,31 @@
         android:background="#fff"
         android:elevation="10dp">
 
-
-        <ImageView
-            android:id="@+id/ic_search"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="10dp"
-            android:src="@drawable/ic_search_black_24dp" />
-
-        <AutoCompleteTextView
+        <fragment android:id="@+id/autocomplete_fragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
+            />
 
-            <EditText
-                android:id="@+id/input_search"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerVertical="true"
-                android:layout_toRightOf="@+id/ic_search"
-                android:background="@null"
-                android:hint="Enter Address, City or Zip code "
-                android:imeOptions="actionSearch"
-                android:textColor="#000"
-                android:textSize="15sp" />
-        </AutoCompleteTextView>
+<!--        <ImageView-->
+<!--            android:id="@+id/ic_search"-->
+<!--            android:layout_width="15dp"-->
+<!--            android:layout_height="15dp"-->
+<!--            android:layout_centerVertical="true"-->
+<!--            android:layout_marginLeft="10dp"-->
+<!--            android:src="@drawable/ic_search_black_24dp" />-->
+
+<!--            <EditText-->
+<!--                android:id="@+id/input_search"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_centerVertical="true"-->
+<!--                android:layout_toRightOf="@+id/ic_search"-->
+<!--                android:background="@null"-->
+<!--                android:hint="Enter Address, City or Zip code "-->
+<!--                android:imeOptions="actionSearch"-->
+<!--                android:textColor="#000"-->
+<!--                android:textSize="15sp" />-->
     </RelativeLayout>
 
     <ImageView
