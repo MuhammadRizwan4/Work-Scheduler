@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -88,12 +87,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // OneSignal Initialization
-        OneSignal.startInit(this)
-                .inFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification)
-                .unsubscribeWhenNotificationsAreDisabled(true)
-                .init();
-
         ButterKnife.bind(this);
         new PrefManager(this).setLastOpenedActivity(USER_ACCOUNT);
 
@@ -132,12 +125,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         profilePictureImageView = header.findViewById(R.id.profile_picture_image_view);
         profileNameTextView = header.findViewById(R.id.profile_name_text_view);
         Picasso.Builder builder = new Picasso.Builder(this);
-        builder.listener(new Picasso.Listener() {
-            @Override
-            public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
-                Toast.makeText(MainActivity.this, "Failed to load profile pic", Toast.LENGTH_SHORT).show();
-            }
-        });
+        builder.listener((picasso, uri, exception) -> Toast.makeText(MainActivity.this, "Failed to load profile pic", Toast.LENGTH_SHORT).show());
         Picasso pic = builder.build();
         pic.load(currentUser.getPhotoUrl())
                 .placeholder(R.mipmap.ic_launcher)
@@ -268,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     OneSignal.sendTag("latitude", String.valueOf(currentLocation.getLatitude()));
                 }
             });
-        } catch (SecurityException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

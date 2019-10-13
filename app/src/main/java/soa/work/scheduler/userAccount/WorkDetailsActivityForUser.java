@@ -162,7 +162,7 @@ public class WorkDetailsActivityForUser extends AppCompatActivity {
                                         Toast.makeText(WorkDetailsActivityForUser.this, "Marked as completed", Toast.LENGTH_SHORT).show();
                                         markAsCompletedButton.setText("Work Completed");
                                         markAsCompletedButton.setEnabled(false);
-                                        currentWorkInCurrentlyAvailableWorks.child("work_completed").setValue(true);
+                                        currentWorkInCurrentlyAvailableWorks.removeValue();
                                         currentWorkInHistory.child("work_completed").setValue(true);
                                         unPublishButton.setVisibility(View.GONE);
                                     })

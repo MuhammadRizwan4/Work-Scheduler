@@ -98,8 +98,9 @@ public class WorkersActivity extends AppCompatActivity implements NavigationView
         appStatus = new AppStatus(this);
         setTitle("Worker Account");
         progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle("Please wait");
+        progressDialog.setMessage("Loading...");
         progressDialog.setCancelable(false);
+        progressDialog.show();
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference userAccountsRef = FirebaseDatabase.getInstance().getReference(USER_ACCOUNTS);
@@ -163,6 +164,7 @@ public class WorkersActivity extends AppCompatActivity implements NavigationView
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                     workList.clear();
+                                    progressDialog.dismiss();
                                     if (dataSnapshot.getChildrenCount() == 0) {
                                         noWorksTextView.setVisibility(View.VISIBLE);
                                         worksAvailableAdapter.notifyDataSetChanged();
@@ -205,7 +207,7 @@ public class WorkersActivity extends AppCompatActivity implements NavigationView
                                         worksAvailableAdapter.notifyDataSetChanged();
                                         return;
                                     }
-                                    progressDialog.dismiss();
+
                                     Collections.sort(workList, new Comparator<UniversalWork>() {
                                         @Override
                                         public int compare(UniversalWork individualWork, UniversalWork t1) {

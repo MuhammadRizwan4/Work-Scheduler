@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -42,6 +43,7 @@ public class WorksHistoryActivity extends AppCompatActivity implements WorksHist
 
     private WorksHistoryAdapter worksHistoryAdapter;
     private ArrayList<IndividualWork> workList = new ArrayList<>();
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +51,9 @@ public class WorksHistoryActivity extends AppCompatActivity implements WorksHist
         setContentView(R.layout.activity_works_history);
 
         ButterKnife.bind(this);
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("loading...");
+        progressDialog.show();
 
         setTitle("History");
 
@@ -67,6 +72,7 @@ public class WorksHistoryActivity extends AppCompatActivity implements WorksHist
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 workList.clear();
+                progressDialog.dismiss();
                 if (dataSnapshot.getChildrenCount() == 0) {
                     noHistoryTextView.setVisibility(View.VISIBLE);
                     worksHistoryAdapter.notifyDataSetChanged();

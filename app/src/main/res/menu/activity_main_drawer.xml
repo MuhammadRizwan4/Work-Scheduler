@@ -5,7 +5,7 @@
 
     <item
         android:id="@+id/dummy"
-        android:title=""/>
+        android:title="Checking worker account..."/>
 
     <item
         android:id="@+id/setup_worker_account_menu_item"
