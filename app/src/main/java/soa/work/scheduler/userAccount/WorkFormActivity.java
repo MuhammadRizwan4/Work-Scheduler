@@ -116,6 +116,8 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
         progressDialog.setMessage("Broadcasting");
         progressDialog.setCancelable(false);
 
+        addressEditText.setFocusable(false);
+
         appStatus = new AppStatus(this);
         button_date.setOnClickListener(arg0 -> {
             DatePickerFragment dialog = new DatePickerFragment();
