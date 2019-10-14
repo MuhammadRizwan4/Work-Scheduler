@@ -40,6 +40,7 @@
         <activity
             android:name=".userAccount.MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".workerAccount.ChooseWorkCategoryActivity"
@@ -60,6 +61,7 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
+        <meta-data android:name="com.onesignal.NotificationOpened.DEFAULT" android:value="DISABLE" />
     </application>
 
 </manifest>

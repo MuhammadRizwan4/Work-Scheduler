@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -51,11 +52,7 @@ import soa.work.scheduler.models.UserAccount;
 import soa.work.scheduler.workerAccount.WorkersActivity;
 import soa.work.scheduler.models.Category;
 
-import static soa.work.scheduler.data.Constants.CARPENTER;
-import static soa.work.scheduler.data.Constants.ELECTRICIAN;
-import static soa.work.scheduler.data.Constants.MECHANIC;
-import static soa.work.scheduler.data.Constants.PAINTER;
-import static soa.work.scheduler.data.Constants.PLUMBER;
+import static soa.work.scheduler.data.Constants.PRICE_STARTS_AT;
 import static soa.work.scheduler.data.Constants.USER_ACCOUNT;
 import static soa.work.scheduler.data.Constants.USER_ACCOUNTS;
 import static soa.work.scheduler.data.Constants.WORK_CATEGORY;
@@ -87,6 +84,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (getIntent().hasExtra("phone_number")) {
+            String phoneNumber = getIntent().getStringExtra("phone_number");
+            Intent intent = new Intent(Intent.ACTION_DIAL);
+            intent.setData(Uri.parse("tel:" + phoneNumber));
+            startActivity(intent);
+        }
+
         ButterKnife.bind(this);
         new PrefManager(this).setLastOpenedActivity(USER_ACCOUNT);
 
@@ -103,16 +107,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
-        categories.add(new Category(MECHANIC, R.drawable.ic_mechanic));
-        categories.add(new Category(PLUMBER, R.drawable.ic_plumber));
-        categories.add(new Category(ELECTRICIAN, R.drawable.ic_electrician));
-        categories.add(new Category(CARPENTER, R.drawable.ic_carpenter));
-        categories.add(new Category(PAINTER, R.drawable.ic_painter));
+        categories.addAll(Category.getCategories());
 
         CategoryRecyclerViewAdapter categoryRecyclerViewAdapter = new CategoryRecyclerViewAdapter(categories);
         categoryRecyclerViewAdapter.setItemClickListener(category -> {
             Intent intent = new Intent(this, WorkFormActivity.class);
             intent.putExtra(WORK_CATEGORY, category.getCategoryTitle());
+            intent.putExtra(PRICE_STARTS_AT, category.getPrice());
             startActivity(intent);
         });
         categoriesRecyclerView.setAdapter(categoryRecyclerViewAdapter);
@@ -155,14 +156,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     return;
                 }
 
-                if (userAccount.getWork_category() == null || userAccount.getWork_category().equals("false")) {
+                if (userAccount.getWorkCategory() == null || userAccount.getWorkCategory().equals("false")) {
                     setupWorkerAccountItem.setVisible(true);
                     switchToWorkerAccountItem.setVisible(false);
                     return;
                 }
 
-                if (!userAccount.getWork_category().isEmpty() && !userAccount.getWork_category().equals("false")) {
-                    OneSignal.sendTag(WORK_CATEGORY, userAccount.getWork_category());
+                if (!userAccount.getWorkCategory().isEmpty() && !userAccount.getWorkCategory().equals("false")) {
+                    OneSignal.sendTag(WORK_CATEGORY, userAccount.getWorkCategory());
                     setupWorkerAccountItem.setVisible(false);
                     switchToWorkerAccountItem.setVisible(true);
                 }
@@ -188,6 +189,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
+            case R.id.dummy:
+                return true;
             case R.id.setup_worker_account_menu_item:
                 Intent worker = new Intent(MainActivity.this, ChooseWorkCategoryActivity.class);
                 startActivity(worker);
@@ -277,6 +280,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
                 sendDeviceLocationToOneSignal();
             }
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent.hasExtra("phone_number")) {
+            String phoneNumber = getIntent().getStringExtra("phone_number");
+            Intent phoneIntent = new Intent(Intent.ACTION_DIAL);
+            phoneIntent.setData(Uri.parse("tel:" + phoneNumber));
+            startActivity(phoneIntent);
         }
     }
 }

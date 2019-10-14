@@ -154,10 +154,10 @@ public class LoginActivity extends AppCompatActivity {
                                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.getDefault());
                                         String currentDateAndTime = sdf.format(new Date());
                                         UserAccount userAccount = new UserAccount();
-                                        userAccount.setAccount_created_on(currentDateAndTime);
+                                        userAccount.setAccountCreatedOn(currentDateAndTime);
                                         userAccount.setEmail(user.getEmail());
                                         userAccount.setName(user.getDisplayName());
-                                        userAccount.setWork_category("false");
+                                        userAccount.setWorkCategory("false");
                                         userAccountsRef.child(user.getUid()).setValue(userAccount);
                                         Toast.makeText(LoginActivity.this, "User Signed In", Toast.LENGTH_SHORT).show();
                                         Intent intent;

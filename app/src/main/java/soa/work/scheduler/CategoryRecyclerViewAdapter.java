@@ -35,6 +35,10 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.categoryTextView.setText(categories.get(position).getCategoryTitle());
         holder.categoryImageView.setImageResource(categories.get(position).getCategoryImage());
+        if (categories.get(position).getPrice() == 0) {
+            holder.priceTextView.setVisibility(View.GONE);
+        } else
+            holder.priceTextView.setText("Price starts at : ₹" + categories.get(position).getPrice());
     }
 
     @Override
@@ -51,6 +55,8 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
         ImageView categoryImageView;
         @BindView(R.id.category_textView)
         TextView categoryTextView;
+        @BindView(R.id.price_textView)
+        TextView priceTextView;
 
         ViewHolder(View view) {
             super(view);
@@ -66,7 +72,7 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
         }
     }
 
-    public interface ItemCLickListener{
+    public interface ItemCLickListener {
         void onItemClick(Category category);
     }
 }

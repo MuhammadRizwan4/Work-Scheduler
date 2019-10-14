@@ -86,7 +86,7 @@ public class WorksHistoryActivity extends AppCompatActivity implements WorksHist
                 Collections.sort(workList, new Comparator<IndividualWork>() {
                     @Override
                     public int compare(IndividualWork individualWork, IndividualWork t1) {
-                        return individualWork.getCreated_date().compareTo(t1.getCreated_date());
+                        return individualWork.getCreatedDate().compareTo(t1.getCreatedDate());
                     }
                 });
                 Collections.reverse(workList);
@@ -113,7 +113,7 @@ public class WorksHistoryActivity extends AppCompatActivity implements WorksHist
     @Override
     public void onItemClick(IndividualWork work) {
         Intent intent = new Intent(WorksHistoryActivity.this, WorkDetailsActivityForUser.class);
-        intent.putExtra("created_date", work.getCreated_date());
+        intent.putExtra("created_date", work.getCreatedDate());
         startActivity(intent);
     }
 }

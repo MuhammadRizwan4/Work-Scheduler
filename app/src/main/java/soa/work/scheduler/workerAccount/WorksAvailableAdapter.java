@@ -16,13 +16,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import soa.work.scheduler.R;
+import soa.work.scheduler.models.Category;
 import soa.work.scheduler.models.UniversalWork;
-
-import static soa.work.scheduler.data.Constants.CARPENTER;
-import static soa.work.scheduler.data.Constants.ELECTRICIAN;
-import static soa.work.scheduler.data.Constants.MECHANIC;
-import static soa.work.scheduler.data.Constants.PAINTER;
-import static soa.work.scheduler.data.Constants.PLUMBER;
 
 public class WorksAvailableAdapter extends RecyclerView.Adapter<WorksAvailableAdapter.ViewHolder> {
 
@@ -46,25 +41,14 @@ public class WorksAvailableAdapter extends RecyclerView.Adapter<WorksAvailableAd
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         UniversalWork work = list.get(position);
-        holder.user_name.setText(work.getWork_posted_by_name());
-        holder.workDescriptionTextView.setText("Description: " + work.getWork_description());
-        holder.work_deadline.setText("Deadline: " + work.getWork_deadline());
-        holder.work_price_range.setText("Rs." + work.getPrice_range_from() + " - " + "Rs." + work.getPrice_range_to());
-        switch (work.getWork_category()) {
-            case PAINTER:
-                holder.categoryImageView.setImageResource(R.drawable.ic_painter);
-                break;
-            case CARPENTER:
-                holder.categoryImageView.setImageResource(R.drawable.ic_carpenter);
-                break;
-            case PLUMBER:
-                holder.categoryImageView.setImageResource(R.drawable.ic_plumber);
-                break;
-            case MECHANIC:
-                holder.categoryImageView.setImageResource(R.drawable.ic_mechanic);
-                break;
-            case ELECTRICIAN:
-                holder.categoryImageView.setImageResource(R.drawable.ic_electrician);
+        holder.user_name.setText(work.getWorkPostedByName());
+        holder.workDescriptionTextView.setText("Description: " + work.getWorkDescription());
+        holder.work_deadline.setText("Deadline: " + work.getWorkDeadline());
+        holder.work_price_range.setText("Starts at Rs." + work.getPriceStartsAt());
+        for (Category category : Category.getCategories()) {
+            if (category.getCategoryTitle().equals(work.getWorkCategory())) {
+                holder.categoryImageView.setImageResource(category.getCategoryImage());
+            }
         }
 
     }

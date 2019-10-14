@@ -2,11 +2,9 @@ package soa.work.scheduler.workerAccount;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -24,31 +22,17 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Scanner;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import soa.work.scheduler.R;
-import soa.work.scheduler.retrofit.ApiService;
-import soa.work.scheduler.retrofit.RetrofitClient;
-import soa.work.scheduler.models.OneSignalIds;
 import soa.work.scheduler.models.UniversalWork;
 import soa.work.scheduler.models.UserAccount;
-import soa.work.scheduler.userAccount.WorkDetailsActivityForUser;
+import soa.work.scheduler.utilities.OneSignal;
 
 import static soa.work.scheduler.data.Constants.CURRENTLY_AVAILABLE_WORKS;
 import static soa.work.scheduler.data.Constants.UID;
@@ -58,7 +42,6 @@ import static soa.work.scheduler.data.Constants.WORKS_POSTED;
 import static soa.work.scheduler.data.Constants.WORK_ASSIGNED_AT;
 import static soa.work.scheduler.data.Constants.WORK_ASSIGNED_TO;
 import static soa.work.scheduler.data.Constants.WORK_ASSIGNED_TO_ID;
-import static soa.work.scheduler.data.Constants.WORK_CANCEL;
 
 public class WorkDetailsActivity extends AppCompatActivity {
 
@@ -83,12 +66,8 @@ public class WorkDetailsActivity extends AppCompatActivity {
 
     private FirebaseUser currentUser;
     private String created_date, work_posted_by_account_id;
-    private String oneSignalAppId;
-    private String oneSignalRestApiKey;
-    private boolean is_assignned;
-    private String account_id;
-    private String created_Date;
-    private String user_phonenum;
+    private boolean isAssigned;
+    private String userPhoneNum;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -124,20 +103,18 @@ public class WorkDetailsActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 UniversalWork work = dataSnapshot.getValue(UniversalWork.class);
-                postedAtTextView.setText(Objects.requireNonNull(work).getCreated_date());
-                postedByTextView.setText(work.getWork_posted_by_name());
-                priceRangeTextView.setText(String.format("Rs.%s - Rs.%s", work.getPrice_range_from(), work.getPrice_range_to()));
-                userPhoneNumberTextView.setText(work.getUser_phone());
-                userLocationTextView.setText(work.getWork_address());
-                deadlineTextView.setText(work.getWork_deadline());
-                account_id = work.getWork_posted_by_account_id();
-                created_Date = work.getCreated_date();
-                user_phonenum = work.getUser_phone();
-                workDescriptionTextView.setText(work.getWork_description());
-                if (work.getAssigned_to_id().equals(currentUser.getUid())) {
+                postedAtTextView.setText(Objects.requireNonNull(work).getCreatedDate());
+                postedByTextView.setText(work.getWorkPostedByName());
+                priceRangeTextView.setText("Starts at Rs." + work.getPriceStartsAt());
+                userPhoneNumberTextView.setText(work.getUserPhone());
+                userLocationTextView.setText(work.getWorkAddress());
+                deadlineTextView.setText(work.getWorkDeadline());
+                userPhoneNum = work.getUserPhone();
+                workDescriptionTextView.setText(work.getWorkDescription());
+                if (work.getAssignedToId().equals(currentUser.getUid())) {
                     acceptWorkButton.setText("CANCEL WORK");
                     acceptWorkButton.setBackgroundTintList(getResources().getColorStateList(R.color.button_color));
-                    is_assignned = true;
+                    isAssigned = true;
                 }
             }
 
@@ -148,7 +125,7 @@ public class WorkDetailsActivity extends AppCompatActivity {
         });
 
         acceptWorkButton.setOnClickListener(view -> {
-            if (!is_assignned) {
+            if (!isAssigned) {
                 new AlertDialog.Builder(WorkDetailsActivity.this)
                         .setMessage("Are you sure want to accept?")
                         .setCancelable(true)
@@ -168,18 +145,20 @@ public class WorkDetailsActivity extends AppCompatActivity {
                                     currentWork.child(WORK_ASSIGNED_TO).setValue(currentUser.getDisplayName());
                                     currentWork.child(WORK_ASSIGNED_AT).setValue(currentDateAndTime);
                                     currentWork.child(WORK_ASSIGNED_TO_ID).setValue(currentUser.getUid());
-                                    currentWork.child(WORKER_PHONE_NUMBER).setValue(Objects.requireNonNull(userAccount).getPhone_number());
+                                    currentWork.child(WORKER_PHONE_NUMBER).setValue(Objects.requireNonNull(userAccount).getPhoneNumber());
 
                                     DatabaseReference accountOfUser = database.getReference(USER_ACCOUNTS).child(work_posted_by_account_id);
                                     DatabaseReference workInUserHistory = accountOfUser.child(WORKS_POSTED).child(work_posted_by_account_id + "-" + created_date);
                                     workInUserHistory.child(WORK_ASSIGNED_TO).setValue(currentUser.getDisplayName());
                                     workInUserHistory.child(WORK_ASSIGNED_AT).setValue(currentDateAndTime);
                                     workInUserHistory.child(WORK_ASSIGNED_TO_ID).setValue(currentUser.getUid());
-                                    workInUserHistory.child(WORKER_PHONE_NUMBER).setValue(userAccount.getPhone_number());
+                                    workInUserHistory.child(WORKER_PHONE_NUMBER).setValue(userAccount.getPhoneNumber());
                                     acceptWorkButton.setText("CANCEL WORK");
                                     acceptWorkButton.setBackgroundTintList(getResources().getColorStateList(R.color.button_color));
-                                    is_assignned = true;
-                                    getOneSignalKeys();
+                                    isAssigned = true;
+
+                                    AsyncTask.execute(() -> sendNotificationForWorkAccepted());
+
                                 }
 
                                 @Override
@@ -195,30 +174,26 @@ public class WorkDetailsActivity extends AppCompatActivity {
                         .setMessage("Are you sure want to cancel?")
                         .setCancelable(true)
                         .setPositiveButton("YES", (dialog, which) -> {
-                            /**
-                             * FIXME Send notification here
-                             */
+
                             currentWork.child(WORK_ASSIGNED_TO_ID).setValue("");
                             currentWork.child(WORK_ASSIGNED_TO).setValue("");
                             currentWork.child(WORK_ASSIGNED_AT).setValue("");
                             individualWork.child(WORK_ASSIGNED_TO_ID).setValue("");
                             individualWork.child(WORK_ASSIGNED_TO).setValue("");
                             individualWork.child(WORK_ASSIGNED_AT).setValue("");
-                            acceptWorkButton.setEnabled(false);
-                            acceptWorkButton.setText("WORK CANCELLED");
+                            acceptWorkButton.setText("ACCEPT THIS WORK");
+                            acceptWorkButton.setBackgroundTintList(getResources().getColorStateList(R.color.colorAccent));
 
-
+                            AsyncTask.execute(this::sendNotificationForWorkCancelled);
                         })
-                        .setNegativeButton("NO", (dialog, which) -> {
-                            dialog.dismiss();
-                        }).create().show();
+                        .setNegativeButton("NO", (dialog, which) -> dialog.dismiss()).create().show();
             }
         });
 
         call_user.setOnClickListener(view -> {
-            if (user_phonenum != null && !user_phonenum.isEmpty()) {
+            if (userPhoneNum != null && !userPhoneNum.isEmpty()) {
                 Intent intent = new Intent(Intent.ACTION_DIAL);
-                intent.setData(Uri.parse("tel:" + user_phonenum));
+                intent.setData(Uri.parse("tel:" + userPhoneNum));
                 startActivity(intent);
             } else {
                 Toast.makeText(WorkDetailsActivity.this, "Can't make a call", Toast.LENGTH_SHORT).show();
@@ -226,81 +201,23 @@ public class WorkDetailsActivity extends AppCompatActivity {
         });
     }
 
-    private void getOneSignalKeys() {
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference();
-        storageRef.child("onesignal_id.txt").getDownloadUrl().addOnSuccessListener(uri -> {
-            ApiService apiService = RetrofitClient.getApiService();
-            Call call = apiService.getOneSignalIds(uri.toString());
-            call.enqueue(new Callback<OneSignalIds>() {
-
-                @Override
-                public void onResponse(@NonNull Call<OneSignalIds> call, @NonNull Response<OneSignalIds> response) {
-                    if (response.isSuccessful()) {
-                        assert response.body() != null;
-                        oneSignalAppId = response.body().getOnesignalAppId();
-                        oneSignalRestApiKey = response.body().getRestApiKey();
-                        sendNotification();
-                        AsyncTask.execute(() -> sendNotification());
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<OneSignalIds> call, @NonNull Throwable t) {
-
-                }
-            });
-        }).addOnFailureListener(e -> {
-
-        });
+    private void sendNotificationForWorkAccepted() {
+        String strJsonBody = "{"
+                + "\"app_id\": \"" + OneSignal.oneSignalAppId + "\","
+                + "\"filters\": [{\"field\": \"tag\", \"key\": \"" + UID + "\", \"relation\": \"=\", \"value\": \"" + work_posted_by_account_id + "\"},{\"operator\": \"OR\"},{\"field\": \"amount_spent\", \"relation\": \">\",\"value\": \"0\"}],"
+                + "\"data\": {\"foo\": \"bar\"},"
+                + "\"contents\": {\"en\": \"Your work has been accepted by " + currentUser.getDisplayName() + "\"}"
+                + "}";
+        OneSignal.sendNotification(strJsonBody);
     }
 
-    private void sendNotification() {
-        try {
-            String jsonResponse;
-
-            URL url = new URL("https://onesignal.com/api/v1/notifications");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setUseCaches(false);
-            con.setDoOutput(true);
-            con.setDoInput(true);
-
-            con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            con.setRequestProperty("Authorization", "Basic " + oneSignalRestApiKey);
-            con.setRequestMethod("POST");
-
-            String strJsonBody = "{"
-                    + "\"app_id\": \"" + oneSignalAppId + "\","
-                    + "\"filters\": [{\"field\": \"tag\", \"key\": \"" + UID + "\", \"relation\": \"=\", \"value\": \"" + work_posted_by_account_id + "\"},{\"operator\": \"OR\"},{\"field\": \"amount_spent\", \"relation\": \">\",\"value\": \"0\"}],"
-                    + "\"data\": {\"foo\": \"bar\"},"
-                    + "\"contents\": {\"en\": \"Your work has been accepted by " + currentUser.getDisplayName() + "\"}"
-                    + "}";
-
-            System.out.println("strJsonBody:\n" + strJsonBody);
-
-            byte[] sendBytes = strJsonBody.getBytes(StandardCharsets.UTF_8);
-            con.setFixedLengthStreamingMode(sendBytes.length);
-
-            OutputStream outputStream = con.getOutputStream();
-            outputStream.write(sendBytes);
-
-            int httpResponse = con.getResponseCode();
-            System.out.println("httpResponse: " + httpResponse);
-
-            if (httpResponse >= HttpURLConnection.HTTP_OK
-                    && httpResponse < HttpURLConnection.HTTP_BAD_REQUEST) {
-                Scanner scanner = new Scanner(con.getInputStream(), "UTF-8");
-                jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
-                scanner.close();
-            } else {
-                Scanner scanner = new Scanner(con.getErrorStream(), "UTF-8");
-                jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
-                scanner.close();
-            }
-            System.out.println("jsonResponse:\n" + jsonResponse);
-
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+    private void sendNotificationForWorkCancelled() {
+        String strJsonBody = "{"
+                + "\"app_id\": \"" + OneSignal.oneSignalAppId + "\","
+                + "\"filters\": [{\"field\": \"tag\", \"key\": \"" + UID + "\", \"relation\": \"=\", \"value\": \"" + work_posted_by_account_id + "\"},{\"operator\": \"OR\"},{\"field\": \"amount_spent\", \"relation\": \">\",\"value\": \"0\"}],"
+                + "\"data\": {\"foo\": \"bar\"},"
+                + "\"contents\": {\"en\": \"Your work has been cancelled by " + currentUser.getDisplayName() + "\"}"
+                + "}";
+        OneSignal.sendNotification(strJsonBody);
     }
 }

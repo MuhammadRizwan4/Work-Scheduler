@@ -1,29 +1,29 @@
 package soa.work.scheduler.models;
 
 public class UserAccount {
-    private String account_created_on;
-    private String phone_number;
+    private String accountCreatedOn;
+    private String phoneNumber;
     private String email;
     private String name;
-    private String work_category;
+    private String workCategory;
 
     public UserAccount() {
     }
 
-    public UserAccount(String account_created_on, String phone_number, String email, String name, String work_category) {
-        this.account_created_on = account_created_on;
-        this.phone_number = phone_number;
+    public UserAccount(String accountCreatedOn, String phoneNumber, String email, String name, String workCategory) {
+        this.accountCreatedOn = accountCreatedOn;
+        this.phoneNumber = phoneNumber;
         this.email = email;
         this.name = name;
-        this.work_category = work_category;
+        this.workCategory = workCategory;
     }
 
-    public String getAccount_created_on() {
-        return account_created_on;
+    public String getAccountCreatedOn() {
+        return accountCreatedOn;
     }
 
-    public void setAccount_created_on(String account_created_on) {
-        this.account_created_on = account_created_on;
+    public void setAccountCreatedOn(String accountCreatedOn) {
+        this.accountCreatedOn = accountCreatedOn;
     }
 
     public String getEmail() {
@@ -42,19 +42,19 @@ public class UserAccount {
         this.name = name;
     }
 
-    public String getWork_category() {
-        return work_category;
+    public String getWorkCategory() {
+        return workCategory;
     }
 
-    public void setWork_category(String work_category) {
-        this.work_category = work_category;
+    public void setWorkCategory(String workCategory) {
+        this.workCategory = workCategory;
     }
 
-    public String getPhone_number() {
-        return phone_number;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setPhone_number(String phone_number) {
-        this.phone_number = phone_number;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 }

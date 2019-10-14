@@ -157,7 +157,6 @@ public class WorkersActivity extends AppCompatActivity implements NavigationView
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     work_category = dataSnapshot.getValue(String.class);
                     OneSignal.sendTag(WORK_CATEGORY, work_category);
-
                     currently_available.orderByChild(WORK_CATEGORY)
                             .equalTo(work_category)
                             .addValueEventListener(new ValueEventListener() {
@@ -172,8 +171,8 @@ public class WorkersActivity extends AppCompatActivity implements NavigationView
                                     }
                                     for (DataSnapshot item : dataSnapshot.getChildren()) {
                                         UniversalWork work = item.getValue(UniversalWork.class);
-                                        if (work.getAssigned_at().isEmpty() && work.getAssigned_to().isEmpty()) {
-                                            if (!work.getWork_posted_by_account_id().equals(firebaseUser.getUid())) {
+                                        if (work.getAssignedAt().isEmpty() && work.getAssignedTo().isEmpty()) {
+                                            if (!work.getWorkPostedByAccountId().equals(firebaseUser.getUid())) {
                                                 if (work.getLatitude() == null || work.getLatitude().isEmpty()) {
                                                     continue;
                                                 }
@@ -187,7 +186,7 @@ public class WorkersActivity extends AppCompatActivity implements NavigationView
                                                 }
                                             }
                                         } else {
-                                            if (work.getAssigned_to_id().equals(firebaseUser.getUid())) {
+                                            if (work.getAssignedToId().equals(firebaseUser.getUid())) {
                                                 if (work.getLatitude() == null || work.getLatitude().isEmpty()) {
                                                     continue;
                                                 }
@@ -211,7 +210,7 @@ public class WorkersActivity extends AppCompatActivity implements NavigationView
                                     Collections.sort(workList, new Comparator<UniversalWork>() {
                                         @Override
                                         public int compare(UniversalWork individualWork, UniversalWork t1) {
-                                            return individualWork.getCreated_date().compareTo(t1.getCreated_date());
+                                            return individualWork.getCreatedDate().compareTo(t1.getCreatedDate());
                                         }
                                     });
                                     Collections.reverse(workList);
@@ -271,8 +270,8 @@ public class WorkersActivity extends AppCompatActivity implements NavigationView
     @Override
     public void onItemClick(UniversalWork work) {
         Intent intent = new Intent(this, WorkDetailsActivity.class);
-        intent.putExtra("created_date", work.getCreated_date());
-        intent.putExtra("work_posted_by_account_id", work.getWork_posted_by_account_id());
+        intent.putExtra("created_date", work.getCreatedDate());
+        intent.putExtra("work_posted_by_account_id", work.getWorkPostedByAccountId());
         startActivity(intent);
     }
 

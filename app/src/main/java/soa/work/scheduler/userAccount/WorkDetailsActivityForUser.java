@@ -1,5 +1,6 @@
 package soa.work.scheduler.userAccount;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -23,19 +24,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import soa.work.scheduler.R;
 import soa.work.scheduler.models.IndividualWork;
-import soa.work.scheduler.models.OneSignalIds;
-import soa.work.scheduler.retrofit.ApiService;
-import soa.work.scheduler.retrofit.RetrofitClient;
 import soa.work.scheduler.utilities.OneSignal;
 
 import static soa.work.scheduler.data.Constants.CURRENTLY_AVAILABLE_WORKS;
@@ -44,7 +37,9 @@ import static soa.work.scheduler.data.Constants.PHONE_NUMBER;
 import static soa.work.scheduler.data.Constants.UID;
 import static soa.work.scheduler.data.Constants.USER_ACCOUNTS;
 import static soa.work.scheduler.data.Constants.WORKS_POSTED;
+import static soa.work.scheduler.data.Constants.WORK_COMPLETED;
 
+@SuppressLint("SetTextI18n")
 public class WorkDetailsActivityForUser extends AppCompatActivity {
 
     @BindView(R.id.worker_name_text_view)
@@ -76,8 +71,6 @@ public class WorkDetailsActivityForUser extends AppCompatActivity {
     private String assigned_to_id;
     private String workerPhoneNumber;
     private boolean isWorkAssigned = false;
-    private String oneSignalAppId;
-    private String oneSignalRestApiKey;
     private FirebaseUser firebaseUser;
 
     @Override
@@ -120,35 +113,40 @@ public class WorkDetailsActivityForUser extends AppCompatActivity {
                     currentWorkInCurrentlyAvailableWorks.removeValue();
                     markAsCompletedButton.setVisibility(View.GONE);
                     if (isWorkAssigned) {
-                        getOneSignalKeys();
+                        String jsonBody = "{" +
+                                "\"app_id\": \"" + OneSignal.oneSignalAppId + "\"," +
+                                "\"filters\": [" +
+                                "{\"field\": \"tag\", \"key\": \"" + UID + "\", \"relation\": \"=\", \"value\": \"" + assigned_to_id + "\"}]," +
+                                "\"contents\": {\"en\": \"" + firebaseUser.getDisplayName() + " has unpublished a work which was accepted by you.\"}" +
+                                "}";
+                        AsyncTask.execute(() -> OneSignal.sendNotification(jsonBody));
+                        Toast.makeText(WorkDetailsActivityForUser.this, "Unpublished", Toast.LENGTH_SHORT).show();
                     }
                     unPublishButton.setEnabled(false);
                     unPublishButton.setText("Un-Published");
                 })
-                .setNegativeButton("NO", (dialog, which) -> {
-                    dialog.dismiss();
-                }).create().show());
+                .setNegativeButton("NO", (dialog, which) -> dialog.dismiss()).create().show());
 
         currentWorkInHistory.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 IndividualWork work = dataSnapshot.getValue(IndividualWork.class);
                 if (work != null) {
-                    assigned_to_id = work.getAssigned_to_id();
-                    postedAtTextView.setText(work.getCreated_date());
-                    priceRangeTextView.setText("Rs." + work.getPrice_range_from() + " - Rs." + work.getPrice_range_to());
-                    userPhoneNumberTextView.setText(work.getUser_phone());
-                    userLocationTextView.setText(work.getWork_address());
-                    deadlineTextView.setText(work.getWork_deadline());
-                    workDescriptionTextView.setText(work.getWork_description());
+                    assigned_to_id = work.getAssignedToId();
+                    postedAtTextView.setText(work.getCreatedDate());
+                    priceRangeTextView.setText("Service starts at Rs." + work.getPriceStartsAt());
+                    userPhoneNumberTextView.setText(work.getUserPhone());
+                    userLocationTextView.setText(work.getWorkAddress());
+                    deadlineTextView.setText(work.getWorkDeadline());
+                    workDescriptionTextView.setText(work.getWorkDescription());
                     workerPhoneNumberTextView.setText(" ");
-                    if (work.getIs_work_available()) {
-                        if (!work.getAssigned_to().isEmpty()) {
+                    if (work.getWorkAvailable()) {
+                        if (!work.getAssignedTo().isEmpty()) {
                             markAsCompletedButton.setVisibility(View.VISIBLE);
                         } else {
                             markAsCompletedButton.setVisibility(View.GONE);
                         }
-                        boolean isWorkCompleted = work.getWork_completed();
+                        boolean isWorkCompleted = work.getWorkCompleted();
                         if (isWorkCompleted) {
                             markAsCompletedButton.setText("Work Completed");
                             markAsCompletedButton.setEnabled(false);
@@ -163,7 +161,7 @@ public class WorkDetailsActivityForUser extends AppCompatActivity {
                                         markAsCompletedButton.setText("Work Completed");
                                         markAsCompletedButton.setEnabled(false);
                                         currentWorkInCurrentlyAvailableWorks.removeValue();
-                                        currentWorkInHistory.child("work_completed").setValue(true);
+                                        currentWorkInHistory.child(WORK_COMPLETED).setValue(true);
                                         unPublishButton.setVisibility(View.GONE);
                                     })
                                     .setNegativeButton("NO", (dialog, which) -> dialog.dismiss())
@@ -176,9 +174,9 @@ public class WorkDetailsActivityForUser extends AppCompatActivity {
                         markAsCompletedButton.setVisibility(View.GONE);
                     }
 
-                    if (!work.getAssigned_to().isEmpty()) {
+                    if (!work.getAssignedTo().isEmpty()) {
                         isWorkAssigned = true;
-                        workerNameTextView.setText(work.getAssigned_to());
+                        workerNameTextView.setText(work.getAssignedTo());
                         workerDetailsLayout.setVisibility(View.VISIBLE);
                     } else {
                         isWorkAssigned = false;
@@ -226,42 +224,6 @@ public class WorkDetailsActivityForUser extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-
-    private void getOneSignalKeys() {
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference();
-        storageRef.child("onesignal_id.txt").getDownloadUrl().addOnSuccessListener(uri -> {
-            ApiService apiService = RetrofitClient.getApiService();
-            Call call = apiService.getOneSignalIds(uri.toString());
-            call.enqueue(new Callback<OneSignalIds>() {
-
-                @Override
-                public void onResponse(@NonNull Call<OneSignalIds> call, @NonNull Response<OneSignalIds> response) {
-                    if (response.isSuccessful()) {
-                        assert response.body() != null;
-                        oneSignalAppId = response.body().getOnesignalAppId();
-                        oneSignalRestApiKey = response.body().getRestApiKey();
-                        String jsonBody = "{" +
-                                "\"app_id\": \"" + oneSignalAppId + "\"," +
-                                "\"filters\": [" +
-                                "{\"field\": \"tag\", \"key\": \"" + UID + "\", \"relation\": \"=\", \"value\": \"" + assigned_to_id + "\"}]," +
-                                "\"contents\": {\"en\": \"" + firebaseUser.getDisplayName() + " has unpublished a work which was accepted by you.\"}" +
-                                "}";
-                        AsyncTask.execute(() -> OneSignal.sendNotification(oneSignalRestApiKey, jsonBody));
-                        Toast.makeText(WorkDetailsActivityForUser.this, "Unpublished", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<OneSignalIds> call, @NonNull Throwable t) {
-
-                }
-            });
-        }).addOnFailureListener(e -> {
-
-        });
     }
 
 }

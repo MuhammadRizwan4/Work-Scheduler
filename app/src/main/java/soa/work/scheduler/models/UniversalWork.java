@@ -1,21 +1,20 @@
 package soa.work.scheduler.models;
 
 public class UniversalWork {
-    private String assigned_at;
-    private String assigned_to;
-    private String assigned_to_id;
-    private String worker_phone_number;
-    private String created_date;
-    private String user_phone;
-    private String work_address;
-    private String work_category;
-    private boolean work_completed;
-    private String work_deadline;
-    private String work_description;
-    private String work_posted_by_account_id;
-    private String work_posted_by_name;
-    private String price_range_from;
-    private String price_range_to;
+    private String assignedAt;
+    private String assignedTo;
+    private String assignedToId;
+    private String workerPhoneNumber;
+    private String createdDate;
+    private String userPhone;
+    private String workAddress;
+    private String workCategory;
+    private boolean workCompleted;
+    private String workDeadline;
+    private String workDescription;
+    private String workPostedByAccountId;
+    private String workPostedByName;
+    private String priceStartsAt;
     private String latitude;
     private String longitude;
 
@@ -38,123 +37,115 @@ public class UniversalWork {
         this.longitude = longitude;
     }
 
-    public String getPrice_range_from() {
-        return price_range_from;
+    public String getPriceStartsAt() {
+        return priceStartsAt;
     }
 
-    public void setPrice_range_from(String price_range_from) {
-        this.price_range_from = price_range_from;
+    public void setPriceStartsAt(String priceStartsAt) {
+        this.priceStartsAt = priceStartsAt;
     }
 
-    public String getPrice_range_to() {
-        return price_range_to;
+    public String getAssignedAt() {
+        return assignedAt;
     }
 
-    public void setPrice_range_to(String price_range_to) {
-        this.price_range_to = price_range_to;
+    public void setAssignedAt(String assignedAt) {
+        this.assignedAt = assignedAt;
     }
 
-    public String getAssigned_at() {
-        return assigned_at;
+    public String getAssignedTo() {
+        return assignedTo;
     }
 
-    public void setAssigned_at(String assigned_at) {
-        this.assigned_at = assigned_at;
+    public void setAssignedTo(String assignedTo) {
+        this.assignedTo = assignedTo;
     }
 
-    public String getAssigned_to() {
-        return assigned_to;
+    public String getCreatedDate() {
+        return createdDate;
     }
 
-    public void setAssigned_to(String assigned_to) {
-        this.assigned_to = assigned_to;
+    public void setCreatedDate(String createdDate) {
+        this.createdDate = createdDate;
     }
 
-    public String getCreated_date() {
-        return created_date;
+    public String getUserPhone() {
+        return userPhone;
     }
 
-    public void setCreated_date(String created_date) {
-        this.created_date = created_date;
+    public void setUserPhone(String userPhone) {
+        this.userPhone = userPhone;
     }
 
-    public String getUser_phone() {
-        return user_phone;
+    public String getWorkAddress() {
+        return workAddress;
     }
 
-    public void setUser_phone(String user_phone) {
-        this.user_phone = user_phone;
+    public void setWorkAddress(String workAddress) {
+        this.workAddress = workAddress;
     }
 
-    public String getWork_address() {
-        return work_address;
+    public String getWorkCategory() {
+        return workCategory;
     }
 
-    public void setWork_address(String work_address) {
-        this.work_address = work_address;
+    public void setWorkCategory(String workCategory) {
+        this.workCategory = workCategory;
     }
 
-    public String getWork_category() {
-        return work_category;
+    public void setWorkCompleted(boolean workCompleted) {
+        this.workCompleted = workCompleted;
     }
 
-    public void setWork_category(String work_category) {
-        this.work_category = work_category;
+    public String getWorkDeadline() {
+        return workDeadline;
     }
 
-    public void setWork_completed(boolean work_completed) {
-        this.work_completed = work_completed;
+    public void setWorkDeadline(String workDeadline) {
+        this.workDeadline = workDeadline;
     }
 
-    public String getWork_deadline() {
-        return work_deadline;
+    public String getWorkDescription() {
+        return workDescription;
     }
 
-    public void setWork_deadline(String work_deadline) {
-        this.work_deadline = work_deadline;
+    public void setWorkDescription(String workDescription) {
+        this.workDescription = workDescription;
     }
 
-    public String getWork_description() {
-        return work_description;
+    public String getWorkPostedByAccountId() {
+        return workPostedByAccountId;
     }
 
-    public void setWork_description(String work_description) {
-        this.work_description = work_description;
+    public void setWorkPostedByAccountId(String workPostedByAccountId) {
+        this.workPostedByAccountId = workPostedByAccountId;
     }
 
-    public String getWork_posted_by_account_id() {
-        return work_posted_by_account_id;
+    public String getWorkPostedByName() {
+        return workPostedByName;
     }
 
-    public void setWork_posted_by_account_id(String work_posted_by_account_id) {
-        this.work_posted_by_account_id = work_posted_by_account_id;
+    public void setWorkPostedByName(String workPostedByName) {
+        this.workPostedByName = workPostedByName;
     }
 
-    public String getWork_posted_by_name() {
-        return work_posted_by_name;
+    public String getAssignedToId() {
+        return assignedToId;
     }
 
-    public void setWork_posted_by_name(String work_posted_by_name) {
-        this.work_posted_by_name = work_posted_by_name;
+    public void setAssignedToId(String assignedToId) {
+        this.assignedToId = assignedToId;
     }
 
-    public String getAssigned_to_id() {
-        return assigned_to_id;
+    public boolean isWorkCompleted() {
+        return workCompleted;
     }
 
-    public void setAssigned_to_id(String assigned_to_id) {
-        this.assigned_to_id = assigned_to_id;
+    public String getWorkerPhoneNumber() {
+        return workerPhoneNumber;
     }
 
-    public boolean isWork_completed() {
-        return work_completed;
-    }
-
-    public String getWorker_phone_number() {
-        return worker_phone_number;
-    }
-
-    public void setWorker_phone_number(String worker_phone_number) {
-        this.worker_phone_number = worker_phone_number;
+    public void setWorkerPhoneNumber(String workerPhoneNumber) {
+        this.workerPhoneNumber = workerPhoneNumber;
     }
 }

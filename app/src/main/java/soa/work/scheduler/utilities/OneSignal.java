@@ -11,8 +11,10 @@ import java.util.Scanner;
 public class OneSignal {
 
     private static final String TAG = "OneSignal";
+    public static String oneSignalAppId = "";
+    public static String oneSignalRestApiKey = "";
 
-    public static void sendNotification(String oneSignalRestApiKey, String jsonBody) {
+    public static void sendNotification(String jsonBody) {
         try {
             String jsonResponse;
 
