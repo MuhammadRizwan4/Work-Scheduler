@@ -47,7 +47,7 @@ public class Category {
 
     public static List<Category> getCategories() {
         ArrayList<Category> categories = new ArrayList<>();
-        categories.add(new Category(CARPENTER, "http://imgbox.com/U0qmSBz7", 299.00));
+        categories.add(new Category(CARPENTER, "https://drive.google.com/open?id=18rJWIWAIi1UWtu-8kjSx2wqPyTHZKEoy", 299.00));
 //        categories.add(new Category(MECHANIC, R.drawable.ic_mechanic, 299.00));
 //        categories.add(new Category(AC_REPAIRING, R.drawable.ic_mechanic, 499.00));
 //        categories.add(new Category(BIKE_MECHANIC, R.drawable.ic_mechanic, 449.00));

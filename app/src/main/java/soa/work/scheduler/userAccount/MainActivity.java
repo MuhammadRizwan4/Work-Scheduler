@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Toast.makeText(MainActivity.this, "Failed to load profile pic", Toast.LENGTH_SHORT).show();
         });
         Picasso pic = builder.build();
-        pic.load("http://imgbox.com/U0qmSBz7")
+        pic.load(currentUser.getPhotoUrl())
                 .placeholder(R.mipmap.ic_launcher)
                 .into(profilePictureImageView);
         profileNameTextView.setText(currentUser.getDisplayName());

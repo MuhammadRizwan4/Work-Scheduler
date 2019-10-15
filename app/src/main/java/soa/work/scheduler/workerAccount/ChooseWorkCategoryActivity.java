@@ -57,7 +57,9 @@ public class ChooseWorkCategoryActivity extends AppCompatActivity  {
         setContentView(R.layout.activity_choose_work_category);
 
         ButterKnife.bind(this);
-
+        /**
+         * Leave this part for now. test with CategoryrecyclerViewAdapter
+         */
 //        categories.add(new Category(CARPENTER, R.drawable.ic_carpenter));
 //        categories.add(new Category(MECHANIC, R.drawable.ic_mechanic));
 //        categories.add(new Category(AC_REPAIRING, R.drawable.ic_mechanic));

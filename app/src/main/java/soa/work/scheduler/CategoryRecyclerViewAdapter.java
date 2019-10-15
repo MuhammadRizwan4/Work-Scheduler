@@ -1,7 +1,11 @@
 package soa.work.scheduler;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +16,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.List;
 
 import butterknife.BindView;
@@ -39,13 +49,10 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.categoryTextView.setText(categories.get(position).getCategoryTitle());
-        Picasso.Builder builder = new Picasso.Builder(mContext);
-        builder.listener((picasso, uri, exception) -> Toast.makeText(mContext, "Failed to load profile pic", Toast.LENGTH_SHORT).show());
-        Picasso pic = builder.build();
-        Uri uri = Uri.parse(categories.get(position).getCategoryImage());
-        pic.load(uri)
-                .placeholder(R.mipmap.ic_launcher)
-                .into(holder.categoryImageView);
+
+        GetImageTask task = new GetImageTask(holder.categoryImageView);
+        // Execute the task
+        task.execute(categories.get(position).getCategoryImage());
 
         if (categories.get(position).getPrice() == 0) {
             holder.priceTextView.setVisibility(View.GONE);
@@ -88,28 +95,63 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
         void onItemClick(Category category);
     }
 
-//    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-//        ImageView bmImage;
-//
-//        public DownloadImageTask(ImageView bmImage) {
-//            this.bmImage = bmImage;
-//        }
-//
-//        protected Bitmap doInBackground(String... urls) {
-//            String urldisplay = urls[0];
-//            Bitmap mIcon11 = null;
-//            try {
-//                InputStream in = new java.net.URL(urldisplay).openStream();
-//                mIcon11 = BitmapFactory.decodeStream(in);
-//            } catch (Exception e) {
-//                Log.e("Error", e.getMessage());
-//                e.printStackTrace();
-//            }
-//            return mIcon11;
-//        }
-//
-//        protected void onPostExecute(Bitmap result) {
-//            bmImage.setImageBitmap(result);
-//        }
-//    }
+    private static class GetImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView imageView;
+        @Override
+        protected Bitmap doInBackground(String... urls) {
+            Bitmap map = null;
+            for (String url : urls) {
+                map = downloadImage(url);
+            }
+            return map;
+        }
+        public GetImageTask(ImageView imageView){
+            this.imageView = imageView;
+        }
+        // Sets the Bitmap returned by doInBackground
+        @Override
+        protected void onPostExecute(Bitmap result) {
+            imageView.setImageBitmap(result);
+            Log.e("STATUS", "True");
+        }
+
+        // Creates Bitmap from InputStream and returns it
+        private Bitmap downloadImage(String url) {
+            Bitmap bitmap = null;
+            InputStream stream = null;
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            bmOptions.inSampleSize = 1;
+
+            try {
+                stream = getHttpConnection(url);
+                bitmap = BitmapFactory.
+                        decodeStream(stream, null, bmOptions);
+                stream.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            return bitmap;
+        }
+
+        // Makes HttpURLConnection and returns InputStream
+        private InputStream getHttpConnection(String urlString)
+                throws IOException {
+            InputStream stream = null;
+            URL url = new URL(urlString);
+            URLConnection connection = url.openConnection();
+
+            try {
+                HttpURLConnection httpConnection = (HttpURLConnection) connection;
+                httpConnection.setRequestMethod("GET");
+                httpConnection.connect();
+
+                if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    stream = httpConnection.getInputStream();
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            return stream;
+        }
+    }
 }
