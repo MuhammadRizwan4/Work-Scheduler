@@ -44,7 +44,7 @@ public class Constants {
     public static final String LOCALITY = "locality";
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
-    public static final String IS_WORK_AVAILABLE = "isWorkAvailable";
+    public static final String IS_WORK_AVAILABLE = "workAvailable";
     public static final double NEAR_BY_RADIUS = 5000;
     public static final String WORK_COMPLETED = "workCompleted";
 }

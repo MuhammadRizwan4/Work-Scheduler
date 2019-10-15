@@ -13,7 +13,7 @@ public class IndividualWork {
     private boolean workCompleted;
     private String workDeadline;
     private String priceStartsAt;
-    private boolean isWorkAvailable;
+    private boolean workAvailable;
     private String workLatitude;
     private String workLongitude;
 
@@ -37,11 +37,11 @@ public class IndividualWork {
     }
 
     public boolean getWorkAvailable() {
-        return isWorkAvailable;
+        return workAvailable;
     }
 
     public void setWorkAvailable(boolean workAvailable) {
-        this.isWorkAvailable = workAvailable;
+        this.workAvailable = workAvailable;
     }
 
     public String getPriceStartsAt() {

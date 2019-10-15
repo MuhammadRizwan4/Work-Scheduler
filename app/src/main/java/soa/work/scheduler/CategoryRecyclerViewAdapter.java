@@ -3,20 +3,20 @@ package soa.work.scheduler;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -26,7 +26,13 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import soa.work.scheduler.models.Category;
+import soa.work.scheduler.retrofit.ApiService;
+import soa.work.scheduler.retrofit.RetrofitClient;
 
 public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRecyclerViewAdapter.ViewHolder> {
 
@@ -50,9 +56,11 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.categoryTextView.setText(categories.get(position).getCategoryTitle());
 
-        GetImageTask task = new GetImageTask(holder.categoryImageView);
+        //GetImageTask task = new GetImageTask(holder.categoryImageView);
         // Execute the task
-        task.execute(categories.get(position).getCategoryImage());
+        //task.execute(categories.get(position).getCategoryImage());
+
+        fetchImage(categories.get(position).getCategoryImage(), holder.categoryImageView);
 
         if (categories.get(position).getPrice() == 0) {
             holder.priceTextView.setVisibility(View.GONE);
@@ -93,6 +101,53 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
 
     public interface ItemCLickListener {
         void onItemClick(Category category);
+    }
+
+    private void fetchImage(String url, ImageView imageView) {
+        ApiService apiService = RetrofitClient.getApiServiceForImageDownload();
+        Call<ResponseBody> downloadImageCall = apiService.getImage(url);
+        downloadImageCall.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    InputStream in = null;
+                    FileOutputStream out = null;
+
+                    try {
+                        in = response.body().byteStream();
+                        out = new FileOutputStream(mContext.getFilesDir() + File.separator + "test.png");
+                        int c;
+
+                        while ((c = in.read()) != -1) {
+                            out.write(c);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } finally {
+                        if (in != null) {
+                            in.close();
+                        }
+                        if (out != null) {
+                            out.close();
+                        }
+                    }
+
+                    int width, height;
+                    Bitmap bMap = BitmapFactory.decodeFile(mContext.getFilesDir() + File.separator + "test.png");
+                    //width = 2*bMap.getWidth();
+                    //height = 6*bMap.getHeight();
+                    //Bitmap bMap2 = Bitmap.createScaledBitmap(bMap, width, height, false);
+                    imageView.setImageBitmap(bMap);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
     }
 
     private static class GetImageTask extends AsyncTask<String, Void, Bitmap> {
