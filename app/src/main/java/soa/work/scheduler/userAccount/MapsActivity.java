@@ -40,6 +40,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import soa.work.scheduler.R;
@@ -147,7 +149,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 @Override
                 public void onPlaceSelected(@NonNull Place place) {
                     // TODO: Get info about the selected place.
-                    getLocate(place.getName());
+                    //getLocate(place.getName());
+                    AddPlace(place, 1);
                     Log.i("Places", "Place: " + place.getName() + ", " + place.getId());
                 }
 
@@ -161,21 +164,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         map_gps.setOnClickListener(view -> getDeviceLocation());
     }
 
-    private void getLocate(String searchString){
-        Geocoder geocoder = new Geocoder((MapsActivity.this));
-        List<Address> list = new ArrayList<>();
+//    private void getLocate(String searchString){
+//        Geocoder geocoder = new Geocoder((MapsActivity.this));
+//        List<Address> list = new ArrayList<>();
+//
+//        try {
+//            list = geocoder.getFromLocationName(searchString, 1);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        if (list.size() > 0){
+//            Address address = list.get(0);
+//            moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), address.getAddressLine(0));
+//        }
+//
+//    }
 
+    public void AddPlace(Place place, int pno) {
         try {
-            list = geocoder.getFromLocationName(searchString, 1);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            if (mMap == null) {
+                Toast.makeText(MapsActivity.this, "Please check your API key for Google Places SDK and your internet conneciton", Toast.LENGTH_LONG).show();
+            } else {
 
-        if (list.size() > 0){
-            Address address = list.get(0);
-            moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), address.getAddressLine(0));
-        }
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 4));
 
+                mMap.addMarker(new MarkerOptions().position(Objects.requireNonNull(place.getLatLng()))
+                        .title("Name:" + place.getName() + ". Address:" + place.getAddress()));
+
+            }
+        } catch (Exception ex) {
+
+            Toast.makeText(MapsActivity.this, "Error:" + ex.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void getLocationPermission() {

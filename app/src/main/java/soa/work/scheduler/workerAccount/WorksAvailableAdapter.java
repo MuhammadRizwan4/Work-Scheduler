@@ -7,9 +7,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -47,7 +50,11 @@ public class WorksAvailableAdapter extends RecyclerView.Adapter<WorksAvailableAd
         holder.work_price_range.setText("Starts at Rs." + work.getPriceStartsAt());
         for (Category category : Category.getCategories()) {
             if (category.getCategoryTitle().equals(work.getWorkCategory())) {
-                holder.categoryImageView.setImageResource(category.getCategoryImage());
+                Picasso.Builder builder = new Picasso.Builder(mContext);
+                builder.listener((picasso, uri, exception) -> Toast.makeText(mContext, "Failed to load profile pic", Toast.LENGTH_SHORT).show());
+                Picasso pic = builder.build();
+                pic.load(category.getCategoryTitle())
+                        .into(holder.categoryImageView);
             }
         }
 

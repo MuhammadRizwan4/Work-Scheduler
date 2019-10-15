@@ -1,14 +1,17 @@
 package soa.work.scheduler;
 
+import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.squareup.picasso.Picasso;
 import java.util.List;
 
 import butterknife.BindView;
@@ -19,9 +22,11 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
 
     private List<Category> categories;
     private ItemCLickListener itemCLickListener;
+    private Context mContext;
 
-    public CategoryRecyclerViewAdapter(List<Category> categories) {
+    public CategoryRecyclerViewAdapter(List<Category> categories, Context mContext) {
         this.categories = categories;
+        this.mContext = mContext;
     }
 
     @NonNull
@@ -34,7 +39,14 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.categoryTextView.setText(categories.get(position).getCategoryTitle());
-        holder.categoryImageView.setImageResource(categories.get(position).getCategoryImage());
+        Picasso.Builder builder = new Picasso.Builder(mContext);
+        builder.listener((picasso, uri, exception) -> Toast.makeText(mContext, "Failed to load profile pic", Toast.LENGTH_SHORT).show());
+        Picasso pic = builder.build();
+        Uri uri = Uri.parse(categories.get(position).getCategoryImage());
+        pic.load(uri)
+                .placeholder(R.mipmap.ic_launcher)
+                .into(holder.categoryImageView);
+
         if (categories.get(position).getPrice() == 0) {
             holder.priceTextView.setVisibility(View.GONE);
         } else
@@ -75,4 +87,29 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
     public interface ItemCLickListener {
         void onItemClick(Category category);
     }
+
+//    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+//        ImageView bmImage;
+//
+//        public DownloadImageTask(ImageView bmImage) {
+//            this.bmImage = bmImage;
+//        }
+//
+//        protected Bitmap doInBackground(String... urls) {
+//            String urldisplay = urls[0];
+//            Bitmap mIcon11 = null;
+//            try {
+//                InputStream in = new java.net.URL(urldisplay).openStream();
+//                mIcon11 = BitmapFactory.decodeStream(in);
+//            } catch (Exception e) {
+//                Log.e("Error", e.getMessage());
+//                e.printStackTrace();
+//            }
+//            return mIcon11;
+//        }
+//
+//        protected void onPostExecute(Bitmap result) {
+//            bmImage.setImageBitmap(result);
+//        }
+//    }
 }

@@ -58,23 +58,23 @@ public class ChooseWorkCategoryActivity extends AppCompatActivity  {
 
         ButterKnife.bind(this);
 
-        categories.add(new Category(CARPENTER, R.drawable.ic_carpenter));
-        categories.add(new Category(MECHANIC, R.drawable.ic_mechanic));
-        categories.add(new Category(AC_REPAIRING, R.drawable.ic_mechanic));
-        categories.add(new Category(BIKE_MECHANIC, R.drawable.ic_mechanic));
-        categories.add(new Category(CAR_MECHANIC, R.drawable.ic_mechanic));
-        categories.add(new Category(ELECTRICIAN, R.drawable.ic_electrician));
-        categories.add(new Category(GEYSER_REPAIRING, R.drawable.ic_electrician));
-        categories.add(new Category(LAPTOP_OR_PC_REPAIRING, R.drawable.ic_electrician));
-        categories.add(new Category(MICROWAVE_REPAIRING, R.drawable.ic_electrician));
-        categories.add(new Category(MOBILE_REPAIRING, R.drawable.ic_electrician));
-        categories.add(new Category(PLUMBER, R.drawable.ic_plumber));
-        categories.add(new Category(REFRIGERATOR_REPAIRING, R.drawable.ic_electrician));
-        categories.add(new Category(WASHING_MACHINE_REPAIRING, R.drawable.ic_electrician));
-        categories.add(new Category(PAINTER, R.drawable.ic_painter));
+//        categories.add(new Category(CARPENTER, R.drawable.ic_carpenter));
+//        categories.add(new Category(MECHANIC, R.drawable.ic_mechanic));
+//        categories.add(new Category(AC_REPAIRING, R.drawable.ic_mechanic));
+//        categories.add(new Category(BIKE_MECHANIC, R.drawable.ic_mechanic));
+//        categories.add(new Category(CAR_MECHANIC, R.drawable.ic_mechanic));
+//        categories.add(new Category(ELECTRICIAN, R.drawable.ic_electrician));
+//        categories.add(new Category(GEYSER_REPAIRING, R.drawable.ic_electrician));
+//        categories.add(new Category(LAPTOP_OR_PC_REPAIRING, R.drawable.ic_electrician));
+//        categories.add(new Category(MICROWAVE_REPAIRING, R.drawable.ic_electrician));
+//        categories.add(new Category(MOBILE_REPAIRING, R.drawable.ic_electrician));
+//        categories.add(new Category(PLUMBER, R.drawable.ic_plumber));
+//        categories.add(new Category(REFRIGERATOR_REPAIRING, R.drawable.ic_electrician));
+//        categories.add(new Category(WASHING_MACHINE_REPAIRING, R.drawable.ic_electrician));
+//        categories.add(new Category(PAINTER, R.drawable.ic_painter));
 
 
-        CategoryRecyclerViewAdapter categoryRecyclerViewAdapter = new CategoryRecyclerViewAdapter(categories);
+        CategoryRecyclerViewAdapter categoryRecyclerViewAdapter = new CategoryRecyclerViewAdapter(categories, this);
         categoryRecyclerViewAdapter.setItemClickListener(this::askPhoneNumber);
         categoriesRecyclerView.setAdapter(categoryRecyclerViewAdapter);
         GridLayoutManager manager = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);

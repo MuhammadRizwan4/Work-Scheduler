@@ -36,6 +36,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.jakewharton.picasso.OkHttp3Downloader;
 import com.onesignal.OneSignal;
 import com.squareup.picasso.Picasso;
 
@@ -43,6 +44,7 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.OkHttpClient;
 import soa.work.scheduler.CategoryRecyclerViewAdapter;
 import soa.work.scheduler.workerAccount.ChooseWorkCategoryActivity;
 import soa.work.scheduler.LoginActivity;
@@ -109,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         categories.addAll(Category.getCategories());
 
-        CategoryRecyclerViewAdapter categoryRecyclerViewAdapter = new CategoryRecyclerViewAdapter(categories);
+        CategoryRecyclerViewAdapter categoryRecyclerViewAdapter = new CategoryRecyclerViewAdapter(categories, this);
         categoryRecyclerViewAdapter.setItemClickListener(category -> {
             Intent intent = new Intent(this, WorkFormActivity.class);
             intent.putExtra(WORK_CATEGORY, category.getCategoryTitle());
@@ -125,10 +127,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         View header = navigationView.getHeaderView(0);
         profilePictureImageView = header.findViewById(R.id.profile_picture_image_view);
         profileNameTextView = header.findViewById(R.id.profile_name_text_view);
-        Picasso.Builder builder = new Picasso.Builder(this);
-        builder.listener((picasso, uri, exception) -> Toast.makeText(MainActivity.this, "Failed to load profile pic", Toast.LENGTH_SHORT).show());
+        OkHttpClient client = new OkHttpClient();
+        Picasso.Builder builder = new Picasso.Builder(this)
+                .downloader(new OkHttp3Downloader(client));
+        builder.listener((picasso, uri, exception) -> {
+            Toast.makeText(MainActivity.this, "Failed to load profile pic", Toast.LENGTH_SHORT).show();
+        });
         Picasso pic = builder.build();
-        pic.load(currentUser.getPhotoUrl())
+        pic.load("http://imgbox.com/U0qmSBz7")
                 .placeholder(R.mipmap.ic_launcher)
                 .into(profilePictureImageView);
         profileNameTextView.setText(currentUser.getDisplayName());
