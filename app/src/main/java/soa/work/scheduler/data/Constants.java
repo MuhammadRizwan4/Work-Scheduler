@@ -27,7 +27,7 @@ public class Constants {
     public static final String STUDENT_PROJECT = "Student Project";
     public static final String MARVEL = "Marvel Work";
     public static final String WEDDING = "Wedding event Management";
-    public static final String VOLUNTEER = "Volunteer Managmennt";
+    public static final String VOLUNTEER = "Volunteer Management";
 
 
     public static final String PRICE_STARTS_AT = "priceStartAt";

@@ -121,12 +121,6 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
             holder.priceTextView.setText("Price starts at : \n₹ " + price);
             holder.priceTextView.setVisibility(View.VISIBLE);
         }
-
-
-//        if (categories.get(position).getPrice() == 0) {
-//            holder.priceTextView.setVisibility(View.GONE);
-//        } else
-//            holder.priceTextView.setText("Price starts at : ₹ " + categories.get(position).getPrice());
     }
 
     @Override

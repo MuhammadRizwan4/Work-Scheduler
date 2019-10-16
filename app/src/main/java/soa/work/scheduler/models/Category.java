@@ -70,7 +70,7 @@ public class Category {
 
     public static List<Category> getCategories() {
         ArrayList<Category> categories = new ArrayList<>();
-        categories.add(new Category(CARPENTER, ""));
+        categories.add(new Category(CARPENTER, "carpenter.jpg"));
         categories.add(new Category(MECHANIC,""));
         categories.add(new Category(AC_REPAIRING,"ac_repair.jpg"));
         categories.add(new Category(BIKE_MECHANIC,"bike_mechanic.jpg"));
