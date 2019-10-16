@@ -16,21 +16,7 @@ public class RetrofitClient {
         return retrofit;
     }
 
-    private static Retrofit getRetrofitInstanceForImageDownload() {
-        if (retrofit == null) {
-            retrofit = new Retrofit.Builder()
-                    .baseUrl("https://drive.google.com/")
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-        }
-        return retrofit;
-    }
-
     public static ApiService getApiService() {
         return getRetrofitInstance().create(ApiService.class);
-    }
-
-    public static ApiService getApiServiceForImageDownload() {
-        return getRetrofitInstanceForImageDownload().create(ApiService.class);
     }
 }

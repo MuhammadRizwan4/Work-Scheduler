@@ -1,9 +1,9 @@
 package soa.work.scheduler;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,11 +13,16 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,6 +39,7 @@ import retrofit2.Response;
 import soa.work.scheduler.models.Category;
 import soa.work.scheduler.retrofit.ApiService;
 import soa.work.scheduler.retrofit.RetrofitClient;
+import soa.work.scheduler.utilities.PrefManager;
 
 import static soa.work.scheduler.data.Constants.PRICE_OFFERS;
 import static soa.work.scheduler.data.Constants.WORK_PRICE;
@@ -43,11 +49,34 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
     private List<Category> categories;
     private ItemCLickListener itemCLickListener;
     private Context mContext;
-    private ProgressDialog progressDialog;
+    private StorageReference storageRef;
+    private ApiService apiService;
+    private static final String TAG = "CategoryRecyclerViewAda";
+    private FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
+    private int imageVersion;
+    private PrefManager prefManager;
 
     public CategoryRecyclerViewAdapter(List<Category> categories, Context mContext) {
         this.categories = categories;
         this.mContext = mContext;
+        storageRef = FirebaseStorage.getInstance().getReference();
+        apiService = RetrofitClient.getApiService();
+        prefManager = new PrefManager(mContext);
+
+        Task<Void> fetch = remoteConfig.fetch(0);
+        fetch.addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                remoteConfig.activate().addOnSuccessListener(new OnSuccessListener<Boolean>() {
+                    @Override
+                    public void onSuccess(Boolean success) {
+                        if (success) {
+                            imageVersion = Integer.parseInt(remoteConfig.getString("images_version"));
+                        }
+                    }
+                });
+            }
+        });
     }
 
     @NonNull
@@ -60,15 +89,15 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.categoryTextView.setText(categories.get(position).getCategoryTitle());
-        fetchImage(categories.get(position).getCategoryImage(), holder.categoryImageView);
+        setImage(categories.get(position).getCategoryImageFileName(), holder.categoryImageView);
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference user = database.getReference(PRICE_OFFERS).child(categories.get(position).getCategoryTitle()).child(WORK_PRICE);
         user.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-               String price = dataSnapshot.getValue(String.class);
-                if (price == null){
+                String price = dataSnapshot.getValue(String.class);
+                if (price == null) {
                     holder.priceTextView.setVisibility(View.GONE);
                 } else {
                     holder.priceTextView.setText("Price starts at : \n₹ " + price);
@@ -122,41 +151,68 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
         void onItemClick(Category category);
     }
 
-    private void fetchImage(String url, ImageView imageView) {
-        ApiService apiService = RetrofitClient.getApiServiceForImageDownload();
-        Call<ResponseBody> downloadImageCall = apiService.getImage(url);
-        progressDialog = new ProgressDialog(mContext);
+    private void setImage(String fileName, ImageView imageView) {
+        if (!fileName.isEmpty()) {
+            File file = new File(mContext.getFilesDir() + File.separator + fileName);
+            if (!file.exists()) {
+                //This file doesn't exists. Need to download and cache it
+                downloadImage(fileName, imageView);
+            } else {
+                //Cached image is available.
+                if (imageVersion > prefManager.getImagesVersion()) {
+                    //New images available
+                    //Download images again
+                    downloadImage(fileName, imageView);
+                } else {
+                    //New images not available. Use cached images
+                    setImageBitmap(fileName, imageView);
+                }
+            }
+        } else {
+            //File name is empty. So falling back to placeholder empty image
+            imageView.setImageDrawable(null);
+        }
 
-        downloadImageCall.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+    }
 
-                if (response.body() != null) {
-                    try (InputStream in = response.body().byteStream(); FileOutputStream out = new FileOutputStream(mContext.getFilesDir() + File.separator + "test.jpg")) {
-                        int c;
+    private void downloadImage(String fileName, ImageView imageView) {
+        storageRef.child(fileName).getDownloadUrl().addOnSuccessListener(uri -> {
+            Call<ResponseBody> downloadImageCall = apiService.getImage(uri.toString());
+            downloadImageCall.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
 
-                        while ((c = in.read()) != -1) {
-                            out.write(c);
+                    if (response.body() != null) {
+                        try {
+                            InputStream in = response.body().byteStream();
+                            FileOutputStream out = new FileOutputStream(mContext.getFilesDir() + File.separator + fileName);
+                            int c;
+
+                            while ((c = in.read()) != -1) {
+                                out.write(c);
+                            }
+                        } catch (IOException e) {
+                            Log.e(TAG, "FileOutputStream error", e);
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
+                    setImageBitmap(fileName, imageView);
                 }
 
-                int width, height;
-                Bitmap bMap = BitmapFactory.decodeFile(mContext.getFilesDir() + File.separator + "test.jpg");
-                //width = 2*bMap.getWidth();
-                //height = 6*bMap.getHeight();
-                //Bitmap bMap2 = Bitmap.createScaledBitmap(bMap, width, height, false);
-                imageView.setImageBitmap(bMap);
-            }
+                @Override
+                public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
 
-            @Override
-            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                }
 
-            }
-
+            });
         });
     }
 
+    private void setImageBitmap(String fileName, ImageView imageView) {
+        int width, height;
+        Bitmap bMap = BitmapFactory.decodeFile(mContext.getFilesDir() + File.separator + fileName);
+        //width = 2*bMap.getWidth();
+        //height = 6*bMap.getHeight();
+        //Bitmap bMap2 = Bitmap.createScaledBitmap(bMap, width, height, false);
+        imageView.setImageBitmap(bMap);
+    }
 }

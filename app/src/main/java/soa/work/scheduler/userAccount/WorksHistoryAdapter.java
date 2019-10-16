@@ -8,12 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -58,7 +55,7 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
 
         for (Category category : Category.getCategories()) {
             if (category.getCategoryTitle().equals(work.getWorkCategory())) {
-                fetchImage(category.getCategoryImage(), holder.categoryImageView);
+                fetchImage(category.getCategoryImageFileName(), holder.categoryImageView);
             }
         }
 
@@ -121,7 +118,7 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
     }
 
     private void fetchImage(String url, ImageView imageView) {
-        ApiService apiService = RetrofitClient.getApiServiceForImageDownload();
+        ApiService apiService = RetrofitClient.getApiService();
         Call<ResponseBody> downloadImageCall = apiService.getImage(url);
         downloadImageCall.enqueue(new Callback<ResponseBody>() {
             @Override
