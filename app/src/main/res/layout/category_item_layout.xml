@@ -22,6 +22,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="10dp"
+            android:elevation="2dp"
             android:layout_gravity="center">
 
             <ImageView
@@ -29,7 +30,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="150dp"
                 tools:src="@drawable/ic_mechanic"
-                android:padding="5dp" />
+                android:scaleType="centerCrop"
+                android:padding="5dp"
+                android:contentDescription="@string/todo" />
 
             <TextView
                 android:id="@+id/category_textView"

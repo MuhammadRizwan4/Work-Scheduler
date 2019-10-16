@@ -1,6 +1,8 @@
 package soa.work.scheduler.userAccount;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,19 +15,28 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import soa.work.scheduler.R;
 import soa.work.scheduler.models.Category;
 import soa.work.scheduler.models.IndividualWork;
+import soa.work.scheduler.retrofit.ApiService;
+import soa.work.scheduler.retrofit.RetrofitClient;
 
 public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapter.ViewHolder> {
 
     private ItemCLickListener itemCLickListener;
     private List<IndividualWork> list;
-    private IndividualWork work;
     private Context mContext;
     public WorksHistoryAdapter(List<IndividualWork> list, Context mContext) {
         this.list = list;
@@ -41,13 +52,13 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        work = list.get(position);
+        IndividualWork work = list.get(position);
         holder.workDescriptionTextView.setText("Description: " + work.getWorkDescription());
         holder.createdAtTextView.setText("Posted at: " + work.getCreatedDate());
 
         for (Category category : Category.getCategories()) {
             if (category.getCategoryTitle().equals(work.getWorkCategory())) {
-               // holder.categoryImageView.setImageResource(category.getCategoryImage());
+                fetchImage(category.getCategoryImage(), holder.categoryImageView);
             }
         }
 
@@ -107,5 +118,39 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
 
     public interface ItemCLickListener {
         void onItemClick(IndividualWork work);
+    }
+
+    private void fetchImage(String url, ImageView imageView) {
+        ApiService apiService = RetrofitClient.getApiServiceForImageDownload();
+        Call<ResponseBody> downloadImageCall = apiService.getImage(url);
+        downloadImageCall.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+
+                if (response.body() != null) {
+                    try (InputStream in = response.body().byteStream(); FileOutputStream out = new FileOutputStream(mContext.getFilesDir() + File.separator + "test.jpg")) {
+                        int c;
+
+                        while ((c = in.read()) != -1) {
+                            out.write(c);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                int width, height;
+                Bitmap bMap = BitmapFactory.decodeFile(mContext.getFilesDir() + File.separator + "test.jpg");
+                //width = 2*bMap.getWidth();
+                //height = 6*bMap.getHeight();
+                //Bitmap bMap2 = Bitmap.createScaledBitmap(bMap, width, height, false);
+                imageView.setImageBitmap(bMap);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+
+            }
+        });
     }
 }

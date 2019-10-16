@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Work Scheduler</string>
+    <string name="app_name">New Smart Solutions</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="descriptive_icon">Descriptive Icons</string>
@@ -13,4 +13,5 @@
     <string name="work_description_hint">Work Description</string>
     <string name="you_have_accepted">You have accepted this work</string>
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyDxlNwc0KqZFIvu-mh2lwxVejeZeXAOsR8</string>
+    <string name="todo">TODO</string>
 </resources>

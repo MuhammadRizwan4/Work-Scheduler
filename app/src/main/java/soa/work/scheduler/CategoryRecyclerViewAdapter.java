@@ -1,5 +1,6 @@
 package soa.work.scheduler;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,9 +12,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,6 +31,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
+import java.util.SplittableRandom;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -31,14 +40,19 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import soa.work.scheduler.models.Category;
+import soa.work.scheduler.models.PriceOffer;
 import soa.work.scheduler.retrofit.ApiService;
 import soa.work.scheduler.retrofit.RetrofitClient;
+
+import static soa.work.scheduler.data.Constants.PRICE_OFFERS;
+import static soa.work.scheduler.data.Constants.WORK_PRICE;
 
 public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRecyclerViewAdapter.ViewHolder> {
 
     private List<Category> categories;
     private ItemCLickListener itemCLickListener;
     private Context mContext;
+    private ProgressDialog progressDialog;
 
     public CategoryRecyclerViewAdapter(List<Category> categories, Context mContext) {
         this.categories = categories;
@@ -55,17 +69,31 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.categoryTextView.setText(categories.get(position).getCategoryTitle());
-
-        //GetImageTask task = new GetImageTask(holder.categoryImageView);
-        // Execute the task
-        //task.execute(categories.get(position).getCategoryImage());
-
         fetchImage(categories.get(position).getCategoryImage(), holder.categoryImageView);
 
-        if (categories.get(position).getPrice() == 0) {
-            holder.priceTextView.setVisibility(View.GONE);
-        } else
-            holder.priceTextView.setText("Price starts at : ₹" + categories.get(position).getPrice());
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference user = database.getReference(PRICE_OFFERS).child(categories.get(position).getCategoryTitle()).child(WORK_PRICE);
+        user.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+               String price = dataSnapshot.getValue(String.class);
+                if (price == null){
+                    holder.priceTextView.setVisibility(View.GONE);
+                } else {
+                    holder.priceTextView.setText("Price starts at : \n₹ " + price);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+//        if (categories.get(position).getPrice() == 0) {
+//            holder.priceTextView.setVisibility(View.GONE);
+//        } else
+//            holder.priceTextView.setText("Price starts at : ₹ " + categories.get(position).getPrice());
     }
 
     @Override
@@ -106,16 +134,14 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
     private void fetchImage(String url, ImageView imageView) {
         ApiService apiService = RetrofitClient.getApiServiceForImageDownload();
         Call<ResponseBody> downloadImageCall = apiService.getImage(url);
+        progressDialog = new ProgressDialog(mContext);
+
         downloadImageCall.enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    InputStream in = null;
-                    FileOutputStream out = null;
+            public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
 
-                    try {
-                        in = response.body().byteStream();
-                        out = new FileOutputStream(mContext.getFilesDir() + File.separator + "test.png");
+                if (response.body() != null) {
+                    try (InputStream in = response.body().byteStream(); FileOutputStream out = new FileOutputStream(mContext.getFilesDir() + File.separator + "test.jpg")) {
                         int c;
 
                         while ((c = in.read()) != -1) {
@@ -123,90 +149,23 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
-                    } finally {
-                        if (in != null) {
-                            in.close();
-                        }
-                        if (out != null) {
-                            out.close();
-                        }
                     }
-
-                    int width, height;
-                    Bitmap bMap = BitmapFactory.decodeFile(mContext.getFilesDir() + File.separator + "test.png");
-                    //width = 2*bMap.getWidth();
-                    //height = 6*bMap.getHeight();
-                    //Bitmap bMap2 = Bitmap.createScaledBitmap(bMap, width, height, false);
-                    imageView.setImageBitmap(bMap);
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+
+                int width, height;
+                Bitmap bMap = BitmapFactory.decodeFile(mContext.getFilesDir() + File.separator + "test.jpg");
+                //width = 2*bMap.getWidth();
+                //height = 6*bMap.getHeight();
+                //Bitmap bMap2 = Bitmap.createScaledBitmap(bMap, width, height, false);
+                imageView.setImageBitmap(bMap);
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
 
             }
+
         });
     }
 
-    private static class GetImageTask extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-        @Override
-        protected Bitmap doInBackground(String... urls) {
-            Bitmap map = null;
-            for (String url : urls) {
-                map = downloadImage(url);
-            }
-            return map;
-        }
-        public GetImageTask(ImageView imageView){
-            this.imageView = imageView;
-        }
-        // Sets the Bitmap returned by doInBackground
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-            Log.e("STATUS", "True");
-        }
-
-        // Creates Bitmap from InputStream and returns it
-        private Bitmap downloadImage(String url) {
-            Bitmap bitmap = null;
-            InputStream stream = null;
-            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-            bmOptions.inSampleSize = 1;
-
-            try {
-                stream = getHttpConnection(url);
-                bitmap = BitmapFactory.
-                        decodeStream(stream, null, bmOptions);
-                stream.close();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-            return bitmap;
-        }
-
-        // Makes HttpURLConnection and returns InputStream
-        private InputStream getHttpConnection(String urlString)
-                throws IOException {
-            InputStream stream = null;
-            URL url = new URL(urlString);
-            URLConnection connection = url.openConnection();
-
-            try {
-                HttpURLConnection httpConnection = (HttpURLConnection) connection;
-                httpConnection.setRequestMethod("GET");
-                httpConnection.connect();
-
-                if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    stream = httpConnection.getInputStream();
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-            return stream;
-        }
-    }
 }
