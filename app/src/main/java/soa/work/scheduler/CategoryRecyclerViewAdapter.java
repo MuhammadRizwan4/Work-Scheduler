@@ -55,6 +55,7 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
     private FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
     private int imageVersion;
     private PrefManager prefManager;
+    private String[] priceList;
 
     public CategoryRecyclerViewAdapter(List<Category> categories, Context mContext) {
         this.categories = categories;
@@ -62,6 +63,7 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
         storageRef = FirebaseStorage.getInstance().getReference();
         apiService = RetrofitClient.getApiService();
         prefManager = new PrefManager(mContext);
+        priceList = new String[categories.size()];
 
         Task<Void> fetch = remoteConfig.fetch(0);
         fetch.addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -91,24 +93,35 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
         holder.categoryTextView.setText(categories.get(position).getCategoryTitle());
         setImage(categories.get(position).getCategoryImageFileName(), holder.categoryImageView);
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference user = database.getReference(PRICE_OFFERS).child(categories.get(position).getCategoryTitle()).child(WORK_PRICE);
-        user.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String price = dataSnapshot.getValue(String.class);
-                if (price == null) {
-                    holder.priceTextView.setVisibility(View.GONE);
-                } else {
-                    holder.priceTextView.setText("Price starts at : \n₹ " + price);
+
+        String price = priceList[position];
+
+        if (price == null) {
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference user = database.getReference(PRICE_OFFERS).child(categories.get(position).getCategoryTitle()).child(WORK_PRICE);
+            user.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    String price = dataSnapshot.getValue(String.class);
+                    if (price == null) {
+                        holder.priceTextView.setVisibility(View.GONE);
+                    } else {
+                        priceList[position] = price;
+                        holder.priceTextView.setVisibility(View.VISIBLE);
+                        holder.priceTextView.setText("Price starts at : \n₹ " + price);
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+        } else {
+            holder.priceTextView.setText("Price starts at : \n₹ " + price);
+            holder.priceTextView.setVisibility(View.VISIBLE);
+        }
+
 
 //        if (categories.get(position).getPrice() == 0) {
 //            holder.priceTextView.setVisibility(View.GONE);

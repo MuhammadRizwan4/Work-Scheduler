@@ -29,15 +29,8 @@ public class Category {
     private String categoryTitle;
     private String categoryImageFileName;
     private String price;
-    private String status;
     private String work_onOffer;
 
-
-    public Category(String categoryTitle, String categoryImageFileName, String status) {
-        this.categoryTitle = categoryTitle;
-        this.categoryImageFileName = categoryImageFileName;
-        this.status = status;
-    }
 
     public Category(String categoryTitle, String categoryImageFileName) {
         this.categoryTitle = categoryTitle;
@@ -77,28 +70,28 @@ public class Category {
 
     public static List<Category> getCategories() {
         ArrayList<Category> categories = new ArrayList<>();
-        categories.add(new Category(CARPENTER, "", ""));
-        categories.add(new Category(MECHANIC,"", ""));
-        categories.add(new Category(AC_REPAIRING,"ac_repair.jpg", ""));
-        categories.add(new Category(BIKE_MECHANIC,"bike_mechanic.jpg", ""));
-        categories.add(new Category(CAR_MECHANIC,"car_mechanic.jpg", ""));
-        categories.add(new Category(ELECTRICIAN, "commercial_electrician.jpg", ""));
-        categories.add(new Category(LAPTOP_OR_PC_REPAIRING, "laptop_pc_repairing.jpg", ""));
-        categories.add(new Category(MOBILE_REPAIRING, "mobile_repairing.jpg", ""));
-        categories.add(new Category(PLUMBER, "plumber.jpg", ""));
-        categories.add(new Category(REFRIGERATOR_REPAIRING,"refrigerator_repairing.jpg", ""));
-        categories.add(new Category(WASHING_MACHINE_REPAIRING, "washing_machine.jpg", ""));
-        categories.add(new Category(PAINTER,"", ""));
-        categories.add(new Category(MARVEL, "", ""));
-        categories.add(new Category(PHOTOGRAPHY, "photography_videography.jpg", ""));
+        categories.add(new Category(CARPENTER, ""));
+        categories.add(new Category(MECHANIC,""));
+        categories.add(new Category(AC_REPAIRING,"ac_repair.jpg"));
+        categories.add(new Category(BIKE_MECHANIC,"bike_mechanic.jpg"));
+        categories.add(new Category(CAR_MECHANIC,"car_mechanic.jpg"));
+        categories.add(new Category(ELECTRICIAN, "commercial_electrician.jpg"));
+        categories.add(new Category(LAPTOP_OR_PC_REPAIRING, "laptop_pc_repairing.jpg"));
+        categories.add(new Category(MOBILE_REPAIRING, "mobile_repairing.jpg"));
+        categories.add(new Category(PLUMBER, "plumber.jpg"));
+        categories.add(new Category(REFRIGERATOR_REPAIRING,"refrigerator_repairing.jpg"));
+        categories.add(new Category(WASHING_MACHINE_REPAIRING, "washing_machine.jpg"));
+        categories.add(new Category(PAINTER,""));
+        categories.add(new Category(MARVEL, ""));
+        categories.add(new Category(PHOTOGRAPHY, "photography_videography.jpg"));
         //Softwatare solution price
-        categories.add(new Category(CATERING, "catering.jpg", ""));
-        categories.add(new Category(T_SHIRT, "t_shirt.jpg", ""));
-        categories.add(new Category(WEDDING, "wedding.jpg", ""));
-        categories.add(new Category(STUDENT_PROJECT, "project-Copy.jpg", ""));
-        categories.add(new Category(VOLUNTEER, "", ""));
-        categories.add(new Category(HOME_TUTOR, "home_tutor.jpg", ""));
-        categories.add(new Category(RENOVATION, "renovation_service.jpg", ""));
+        categories.add(new Category(CATERING, "catering.jpg"));
+        categories.add(new Category(T_SHIRT, "t_shirt.jpg"));
+        categories.add(new Category(WEDDING, "wedding.jpg"));
+        categories.add(new Category(STUDENT_PROJECT, "project-Copy.jpg"));
+        categories.add(new Category(VOLUNTEER, ""));
+        categories.add(new Category(HOME_TUTOR, "home_tutor.jpg"));
+        categories.add(new Category(RENOVATION, "renovation_service.jpg"));
         return categories;
     }
 }

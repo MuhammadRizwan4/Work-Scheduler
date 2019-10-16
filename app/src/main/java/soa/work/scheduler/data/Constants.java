@@ -13,14 +13,14 @@ public class Constants {
     public static final String BIKE_MECHANIC = "Bike Mechanic";
     public static final String CAR_MECHANIC = "Car Mechanic";
     public static final String ELECTRICIAN = "Electrician";
-    public static final String LAPTOP_OR_PC_REPAIRING = "Laptop/PC Repairing";
+    public static final String LAPTOP_OR_PC_REPAIRING = "Laptop or PC Repairing";
     public static final String MOBILE_REPAIRING = "Mobile Repairing";
     public static final String PLUMBER = "Plumber";
     public static final String REFRIGERATOR_REPAIRING = "Refrigerator Repairing";
     public static final String WASHING_MACHINE_REPAIRING = "Washing Machine Repairing";
     public static final String PAINTER = "Painter";
     public static final String CATERING = "Catering";
-    public static final String PHOTOGRAPHY = "Photography/Videography";
+    public static final String PHOTOGRAPHY = "Photography or Videography";
     public static final String HOME_TUTOR = "Home Tutor";
     public static final String RENOVATION = "Renovation Service";
     public static final String T_SHIRT = "T-Shirt Printing";
