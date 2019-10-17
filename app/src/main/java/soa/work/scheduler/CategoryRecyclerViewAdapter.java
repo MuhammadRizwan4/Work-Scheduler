@@ -1,8 +1,9 @@
 package soa.work.scheduler;
 
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,7 +49,7 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
 
     private List<Category> categories;
     private ItemCLickListener itemCLickListener;
-    private Context mContext;
+    private Activity mContext;
     private StorageReference storageRef;
     private ApiService apiService;
     private static final String TAG = "CategoryRecyclerViewAda";
@@ -56,14 +57,16 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
     private int imageVersion;
     private PrefManager prefManager;
     private String[] priceList;
+    private Bitmap[] images;
 
-    public CategoryRecyclerViewAdapter(List<Category> categories, Context mContext) {
+    public CategoryRecyclerViewAdapter(List<Category> categories, Activity mContext) {
         this.categories = categories;
         this.mContext = mContext;
         storageRef = FirebaseStorage.getInstance().getReference();
         apiService = RetrofitClient.getApiService();
         prefManager = new PrefManager(mContext);
         priceList = new String[categories.size()];
+        images = new Bitmap[categories.size()];
 
         Task<Void> fetch = remoteConfig.fetch(0);
         fetch.addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -91,7 +94,7 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.categoryTextView.setText(categories.get(position).getCategoryTitle());
-        setImage(categories.get(position).getCategoryImageFileName(), holder.categoryImageView);
+        setImage(categories.get(position).getCategoryImageFileName(), holder.categoryImageView, position);
 
 
         String price = priceList[position];
@@ -158,31 +161,30 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
         void onItemClick(Category category);
     }
 
-    private void setImage(String fileName, ImageView imageView) {
+    private void setImage(String fileName, ImageView imageView, int position) {
         if (!fileName.isEmpty()) {
             File file = new File(mContext.getFilesDir() + File.separator + fileName);
             if (!file.exists()) {
                 //This file doesn't exists. Need to download and cache it
-                downloadImage(fileName, imageView);
+                downloadImage(fileName, imageView, position);
             } else {
                 //Cached image is available.
                 if (imageVersion > prefManager.getImagesVersion()) {
                     //New images available
                     //Download images again
-                    downloadImage(fileName, imageView);
+                    downloadImage(fileName, imageView, position);
                 } else {
                     //New images not available. Use cached images
-                    setImageBitmap(fileName, imageView);
+                    setImageBitmap(fileName, imageView, position);
                 }
             }
         } else {
             //File name is empty. So falling back to placeholder empty image
             imageView.setImageDrawable(null);
         }
-
     }
 
-    private void downloadImage(String fileName, ImageView imageView) {
+    private void downloadImage(String fileName, ImageView imageView, int position) {
         storageRef.child(fileName).getDownloadUrl().addOnSuccessListener(uri -> {
             Call<ResponseBody> downloadImageCall = apiService.getImage(uri.toString());
             downloadImageCall.enqueue(new Callback<ResponseBody>() {
@@ -202,7 +204,7 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
                             Log.e(TAG, "FileOutputStream error", e);
                         }
                     }
-                    setImageBitmap(fileName, imageView);
+                    setImageBitmap(fileName, imageView, position);
                 }
 
                 @Override
@@ -214,12 +216,37 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
         });
     }
 
-    private void setImageBitmap(String fileName, ImageView imageView) {
-        int width, height;
-        Bitmap bMap = BitmapFactory.decodeFile(mContext.getFilesDir() + File.separator + fileName);
-        //width = 2*bMap.getWidth();
-        //height = 6*bMap.getHeight();
-        //Bitmap bMap2 = Bitmap.createScaledBitmap(bMap, width, height, false);
-        imageView.setImageBitmap(bMap);
+    private void setImageBitmap(String fileName, ImageView imageView, int position) {
+        imageView.setImageDrawable(null);
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Bitmap appBitmap = images[position];
+                if (appBitmap == null) {
+                    imageView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            int width, height;
+                            Bitmap bMap = BitmapFactory.decodeFile(mContext.getFilesDir() + File.separator + fileName);
+                            width = imageView.getWidth();
+                            height = imageView.getHeight();
+                            Bitmap bMap2 = Bitmap.createScaledBitmap(bMap, width, height, false);
+                            images[position] = bMap2;
+                            if (!mContext.isFinishing() && mContext != null) {
+                                mContext.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        imageView.setImageBitmap(bMap2);
+                                    }
+                                });
+                            }
+                        }
+                    });
+
+                } else {
+                    imageView.setImageBitmap(appBitmap);
+                }
+            }
+        });
     }
 }
