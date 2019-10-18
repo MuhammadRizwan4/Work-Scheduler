@@ -3,6 +3,8 @@ package soa.work.scheduler.userAccount;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,29 +14,44 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import soa.work.scheduler.R;
-import soa.work.scheduler.models.Category;
 import soa.work.scheduler.models.IndividualWork;
-import soa.work.scheduler.retrofit.ApiService;
-import soa.work.scheduler.retrofit.RetrofitClient;
+
+import static soa.work.scheduler.data.Constants.AC_REPAIRING;
+import static soa.work.scheduler.data.Constants.BIKE_MECHANIC;
+import static soa.work.scheduler.data.Constants.CARPENTER;
+import static soa.work.scheduler.data.Constants.CAR_MECHANIC;
+import static soa.work.scheduler.data.Constants.CATERING;
+import static soa.work.scheduler.data.Constants.ELECTRICIAN;
+import static soa.work.scheduler.data.Constants.HOME_TUTOR;
+import static soa.work.scheduler.data.Constants.LAPTOP_OR_PC_REPAIRING;
+import static soa.work.scheduler.data.Constants.MARVEL;
+import static soa.work.scheduler.data.Constants.MECHANIC;
+import static soa.work.scheduler.data.Constants.MOBILE_REPAIRING;
+import static soa.work.scheduler.data.Constants.PAINTER;
+import static soa.work.scheduler.data.Constants.PHOTOGRAPHY;
+import static soa.work.scheduler.data.Constants.PLUMBER;
+import static soa.work.scheduler.data.Constants.REFRIGERATOR_REPAIRING;
+import static soa.work.scheduler.data.Constants.RENOVATION;
+import static soa.work.scheduler.data.Constants.STUDENT_PROJECT;
+import static soa.work.scheduler.data.Constants.T_SHIRT;
+import static soa.work.scheduler.data.Constants.VOLUNTEER;
+import static soa.work.scheduler.data.Constants.WASHING_MACHINE_REPAIRING;
+import static soa.work.scheduler.data.Constants.WEDDING;
 
 public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapter.ViewHolder> {
 
     private ItemCLickListener itemCLickListener;
     private List<IndividualWork> list;
     private Context mContext;
+    private Bitmap[] images;
+
     public WorksHistoryAdapter(List<IndividualWork> list, Context mContext) {
         this.list = list;
         this.mContext = mContext;
@@ -49,14 +66,58 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        if (list.size() != 0) {
+            images = new Bitmap[list.size()];
+        }
+        
         IndividualWork work = list.get(position);
         holder.workDescriptionTextView.setText("Description: " + work.getWorkDescription());
         holder.createdAtTextView.setText("Posted at: " + work.getCreatedDate());
+        holder.categoryImageView.setBackgroundResource(R.drawable.ic_image);
 
-        for (Category category : Category.getCategories()) {
-            if (category.getCategoryTitle().equals(work.getWorkCategory())) {
-                fetchImage(category.getCategoryImageFileName(), holder.categoryImageView);
-            }
+        switch (list.get(position).getWorkCategory()){
+            case CARPENTER : setImageBitmap("carpenter.jpg", holder.categoryImageView, position);
+                            break;
+//            case MECHANIC : setImageBitmap("", holder.categoryImageView, position);
+//                            break;
+            case AC_REPAIRING : setImageBitmap("ac_repair.jpg", holder.categoryImageView, position);
+                            break;
+            case BIKE_MECHANIC  : setImageBitmap("bike_mechanic.jpg", holder.categoryImageView, position);
+                            break;
+            case CAR_MECHANIC : setImageBitmap("car_mechanic.jpg", holder.categoryImageView, position);
+                            break;
+            case ELECTRICIAN : setImageBitmap("commercial_electrician.jpg", holder.categoryImageView, position);
+                            break;
+            case LAPTOP_OR_PC_REPAIRING : setImageBitmap("laptop_pc_repairing.jpg", holder.categoryImageView, position);
+                            break;
+            case MOBILE_REPAIRING : setImageBitmap("mobile_repairing.jpg", holder.categoryImageView, position);
+                            break;
+            case PLUMBER : setImageBitmap("plumber.jpg", holder.categoryImageView, position);
+                            break;
+            case REFRIGERATOR_REPAIRING : setImageBitmap("refrigerator_repairing.jpg", holder.categoryImageView, position);
+                            break;
+            case WASHING_MACHINE_REPAIRING : setImageBitmap("washing_machine.jpg", holder.categoryImageView, position);
+                            break;
+            case PAINTER : setImageBitmap("", holder.categoryImageView, position);
+                            break;
+//            case MARVEL  :setImageBitmap("", holder.categoryImageView, position);
+//                            break;
+            case PHOTOGRAPHY : setImageBitmap("photography_videography.jpg", holder.categoryImageView, position);
+                            break;
+            case CATERING : setImageBitmap("catering.jpg", holder.categoryImageView, position);
+                            break;
+            case T_SHIRT  :setImageBitmap("t_shirt.jpg", holder.categoryImageView, position);
+                            break;
+            case WEDDING : setImageBitmap("wedding.jpg", holder.categoryImageView, position);
+                            break;
+            case STUDENT_PROJECT : setImageBitmap("project-Copy.jpg", holder.categoryImageView, position);
+                            break;
+//            case VOLUNTEER : setImageBitmap("", holder.categoryImageView, position);
+//                            break;
+            case HOME_TUTOR : setImageBitmap("home_tutor.jpg", holder.categoryImageView, position);
+                            break;
+            case RENOVATION  : setImageBitmap("renovation_service.jpg", holder.categoryImageView, position);
+                            break;
         }
 
         if (work.getWorkAvailable()){
@@ -117,36 +178,29 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
         void onItemClick(IndividualWork work);
     }
 
-    private void fetchImage(String url, ImageView imageView) {
-        ApiService apiService = RetrofitClient.getApiService();
-        Call<ResponseBody> downloadImageCall = apiService.getImage(url);
-        downloadImageCall.enqueue(new Callback<ResponseBody>() {
+    private void setImageBitmap(String fileName, ImageView imageView, int position) {
+        imageView.setImageDrawable(null);
+        AsyncTask.execute(new Runnable() {
             @Override
-            public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
-
-                if (response.body() != null) {
-                    try (InputStream in = response.body().byteStream(); FileOutputStream out = new FileOutputStream(mContext.getFilesDir() + File.separator + "test.jpg")) {
-                        int c;
-
-                        while ((c = in.read()) != -1) {
-                            out.write(c);
+            public void run() {
+                Bitmap appBitmap = images[position];
+                if (appBitmap == null) {
+                    imageView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            int width, height;
+                            Bitmap bMap = BitmapFactory.decodeFile(mContext.getFilesDir() + File.separator + fileName);
+                            width = imageView.getWidth();
+                            height = imageView.getHeight();
+                            Bitmap bMap2 = Bitmap.createScaledBitmap(bMap, width, height, false);
+                            images[position] = bMap2;
+                            imageView.setImageBitmap(bMap2);
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    });
+
+                } else {
+                    imageView.setImageBitmap(appBitmap);
                 }
-
-                int width, height;
-                Bitmap bMap = BitmapFactory.decodeFile(mContext.getFilesDir() + File.separator + "test.jpg");
-                //width = 2*bMap.getWidth();
-                //height = 6*bMap.getHeight();
-                //Bitmap bMap2 = Bitmap.createScaledBitmap(bMap, width, height, false);
-                imageView.setImageBitmap(bMap);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-
             }
         });
     }

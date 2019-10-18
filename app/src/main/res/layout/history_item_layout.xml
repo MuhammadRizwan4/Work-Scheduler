@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         card_view:cardCornerRadius="5dp"
-        card_view:cardElevation="3dp"
+        card_view:cardElevation="2dp"
         card_view:cardMaxElevation="5dp">
 
         <LinearLayout
@@ -23,7 +23,8 @@
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_marginEnd="10dp"
-                tools:src="@drawable/ic_painter" />
+                tools:src="@drawable/ic_image"
+                tools:ignore="ContentDescription" />
 
             <LinearLayout
                 android:layout_width="0dp"

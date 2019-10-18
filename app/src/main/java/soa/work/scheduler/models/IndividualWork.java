@@ -139,4 +139,5 @@ public class IndividualWork {
     public void setWorkerPhoneNumber(String workerPhoneNumber) {
         this.workerPhoneNumber = workerPhoneNumber;
     }
+
 }

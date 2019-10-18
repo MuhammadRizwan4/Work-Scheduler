@@ -95,7 +95,8 @@ public class CategoryRecyclerViewAdapter extends RecyclerView.Adapter<CategoryRe
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.categoryTextView.setText(categories.get(position).getCategoryTitle());
         setImage(categories.get(position).getCategoryImageFileName(), holder.categoryImageView, position);
-
+        holder.priceTextView.setText("Fetching Price...");
+        holder.categoryImageView.setBackgroundResource(R.drawable.ic_image);
 
         String price = priceList[position];
 
