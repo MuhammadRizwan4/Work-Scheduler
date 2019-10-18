@@ -69,7 +69,7 @@ public class WorksHistoryAdapter extends RecyclerView.Adapter<WorksHistoryAdapte
         if (list.size() != 0) {
             images = new Bitmap[list.size()];
         }
-        
+
         IndividualWork work = list.get(position);
         holder.workDescriptionTextView.setText("Description: " + work.getWorkDescription());
         holder.createdAtTextView.setText("Posted at: " + work.getCreatedDate());

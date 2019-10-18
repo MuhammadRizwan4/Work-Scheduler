@@ -19,6 +19,7 @@ import com.onesignal.OneSignal;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -96,6 +97,7 @@ public class ChooseWorkCategoryActivity extends AppCompatActivity  {
         categoriesRecyclerView.setLayoutManager(manager);
     }
 
+
     private void askPhoneNumber(Category category) {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         alertDialog.setTitle("Contact Info is required");
@@ -112,6 +114,10 @@ public class ChooseWorkCategoryActivity extends AppCompatActivity  {
         alertDialog.setPositiveButton("DONE",
                 (dialog, which) -> {
                     String phoneNumber = input.getText().toString();
+                    /*
+                    TODO
+                    validate the phone number here  
+                     */
                     if (phoneNumber.length() != 10) {
                         Toast.makeText(ChooseWorkCategoryActivity.this, "Phone number is not valid", Toast.LENGTH_SHORT).show();
                         askPhoneNumber(category);
