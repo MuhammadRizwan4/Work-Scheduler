@@ -150,12 +150,12 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
         if (addressEditText.getText().toString().trim().isEmpty() ||
                 phoneNumberEditText.getText().toString().trim().isEmpty() ||
                 workDescriptionEditText.getText().toString().trim().isEmpty() ||
-                phoneNumberEditText.getText().toString().length() != 10 ||
+                isInvalid(phoneNumberEditText.toString()) ||
                 deadline == null ||
                 deadline.trim().isEmpty() ||
                 latitude.trim().isEmpty() ||
                 longitude.trim().isEmpty()) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Details Invalid", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -229,6 +229,29 @@ public class WorkFormActivity extends AppCompatActivity implements DatePickerFra
             progressDialog.dismiss();
             finish();
         }
+    }
+
+    /**
+     * validates phoneNo
+     * @param phoneNo
+     * @return
+     */
+    private boolean isInvalid(String phoneNo) {
+        // validate phone numbers of format "1234567890"
+        if (phoneNo.matches("\\d{10}"))
+            return false;
+            // validating phone number with -, . or spaces
+        else if (phoneNo.matches("\\d{3}[-\\.\\s]\\d{3}[-\\.\\s]\\d{4}"))
+            return false;
+            // validating phone number with extension length from 3 to 5
+        else if (phoneNo.matches("\\d{3}-\\d{3}-\\d{4}\\s(x|(ext))\\d{3,5}"))
+            return false;
+            // validating phone number where area code is in braces ()
+        else if (phoneNo.matches("\\(\\d{3}\\)-\\d{3}-\\d{4}"))
+            return false;
+            // return false if nothing matches the input
+        else return true;
+
     }
 
     @Override
