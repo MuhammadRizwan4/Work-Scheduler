@@ -97,6 +97,11 @@ public class ChooseWorkCategoryActivity extends AppCompatActivity  {
         categoriesRecyclerView.setLayoutManager(manager);
     }
     
+    /**
+     * validates phoneNo 
+     * @param phoneNo
+     * @return
+     */
     private boolean isInvalid(String phoneNo) {
 		// validate phone numbers of format "1234567890"
 		if (phoneNo.matches("\\d{10}"))
