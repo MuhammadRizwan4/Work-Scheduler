@@ -96,7 +96,24 @@ public class ChooseWorkCategoryActivity extends AppCompatActivity  {
         GridLayoutManager manager = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
         categoriesRecyclerView.setLayoutManager(manager);
     }
-
+    
+    private boolean isInvalid(String phoneNo) {
+		// validate phone numbers of format "1234567890"
+		if (phoneNo.matches("\\d{10}"))
+			return false;
+		// validating phone number with -, . or spaces
+		else if (phoneNo.matches("\\d{3}[-\\.\\s]\\d{3}[-\\.\\s]\\d{4}"))
+			return false;
+		// validating phone number with extension length from 3 to 5
+		else if (phoneNo.matches("\\d{3}-\\d{3}-\\d{4}\\s(x|(ext))\\d{3,5}"))
+			return false;
+		// validating phone number where area code is in braces ()
+		else if (phoneNo.matches("\\(\\d{3}\\)-\\d{3}-\\d{4}"))
+			return false;
+		// return false if nothing matches the input
+		else return true;
+		
+	}
 
     private void askPhoneNumber(Category category) {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
@@ -114,11 +131,8 @@ public class ChooseWorkCategoryActivity extends AppCompatActivity  {
         alertDialog.setPositiveButton("DONE",
                 (dialog, which) -> {
                     String phoneNumber = input.getText().toString();
-                    /*
-                    TODO
-                    validate the phone number here  
-                     */
-                    if (phoneNumber.length() != 10) {
+                    
+                    if (isInvalid(phoneNumber)) {
                         Toast.makeText(ChooseWorkCategoryActivity.this, "Phone number is not valid", Toast.LENGTH_SHORT).show();
                         askPhoneNumber(category);
                     } else {
