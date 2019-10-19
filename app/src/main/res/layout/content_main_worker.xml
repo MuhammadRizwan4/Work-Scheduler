@@ -9,21 +9,53 @@
         android:id="@+id/hint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Available works nearby"
-        android:padding="8dp"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:gravity="center"
         android:layout_marginTop="8dp"
-        android:textColor="@android:color/black"
+        android:ellipsize="marquee"
         android:fontFamily="sans-serif-light"
-        android:ellipsize="marquee"/>
+        android:gravity="center"
+        android:padding="8dp"
+        android:text="Available works nearby"
+        android:textColor="@android:color/black"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:id="@+id/weather"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/hint"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:gravity="center"
+        tools:ignore="UseCompoundDrawables">
+
+        <ImageView
+            android:id="@+id/weather_icon"
+            android:layout_width="@dimen/weather_icon_width_and_height"
+            android:layout_height="@dimen/weather_icon_width_and_height"
+            android:layout_marginTop="0dp"
+            android:contentDescription="@string/weather_icon_description"
+            android:focusable="false"
+            android:src="@drawable/unknown" />
+
+        <TextView
+            android:id="@+id/weather_wish"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/weather_temp_height"
+            android:layout_marginStart="12dp"
+            android:focusable="false"
+            android:paddingTop="@dimen/weather_temp_padding_top"
+            android:singleLine="true"
+            android:text="@string/temperature_value_default"
+            android:textAlignment="center"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:layout_below="@id/hint"
         android:id="@+id/works_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/weather"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager" />
 
     <TextView
@@ -31,11 +63,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="No works available"
-        android:textStyle="bold"
         android:gravity="center"
-        android:visibility="gone"
+        android:text="No works available"
         android:textColor="@android:color/black"
-        android:textSize="20sp"/>
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
 
 </RelativeLayout>

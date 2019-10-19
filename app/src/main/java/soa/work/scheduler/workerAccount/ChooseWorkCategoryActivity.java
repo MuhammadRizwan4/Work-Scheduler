@@ -3,30 +3,39 @@ package soa.work.scheduler.workerAccount;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.onesignal.OneSignal;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import soa.work.scheduler.CategoryRecyclerViewAdapter;
 import soa.work.scheduler.R;
+import soa.work.scheduler.Supportclasses.WeatherIcon;
+import soa.work.scheduler.Supportclasses.WeatherText;
 import soa.work.scheduler.models.Category;
+import soa.work.scheduler.models.WeatherViewModel_user;
 import soa.work.scheduler.userAccount.MainActivity;
+import soa.work.scheduler.utilities.AppStatus;
 
 import static soa.work.scheduler.data.Constants.AC_REPAIRING;
 import static soa.work.scheduler.data.Constants.CARPENTER;
@@ -57,14 +66,50 @@ public class ChooseWorkCategoryActivity extends AppCompatActivity  {
 
     @BindView(R.id.categories_recycler_view)
     RecyclerView categoriesRecyclerView;
+    @BindView(R.id.weather_icon)
+    ImageView weather_icon;
+    @BindView(R.id.weather_wish)
+    TextView weather_wish;
 
     private ArrayList<Category> categories = new ArrayList<>();
+    protected WeatherViewModel_user weatherViewModelUser;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_work_category);
 
         ButterKnife.bind(this);
+        AppStatus appStatus = new AppStatus(this);
+
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(this);
+
+        weatherViewModelUser = ViewModelProviders.of(this).get(WeatherViewModel_user.class);
+        weatherViewModelUser.getData().observe(this, weatherModel -> {
+            String iconId = weatherModel.getWeather().get(0).getIcon();
+
+            if (weatherModel != null) {
+                Calendar c = Calendar.getInstance();
+                int timeOfDay = c.get(Calendar.HOUR_OF_DAY);
+                if(timeOfDay < 12){
+                    weather_wish.setText("Good Morning " + acct.getGivenName() + ", " + WeatherText.getWeatherText(iconId));
+                }else if(timeOfDay < 16){
+                    weather_wish.setText("Good Afternoon " + acct.getGivenName() + ", " + WeatherText.getWeatherText(iconId));
+                }else if(timeOfDay < 23){
+                    weather_wish.setText("Good Evening " + acct.getGivenName() + ", " + WeatherText.getWeatherText(iconId));
+                }else {
+                    weather_wish.setText("Good Night " + acct.getGivenName() + ", " + WeatherText.getWeatherText(iconId));
+                }
+
+
+                weather_icon.setImageResource(WeatherIcon.getWeatherIcon(iconId));
+            } else {
+                if (appStatus.isOnline()) {
+                    weather_wish.setText("Unable to load");
+                    weather_icon.setImageResource(R.drawable.unknown);
+                }
+            }
+        });
 
         categories.add(new Category(CARPENTER, "carpenter.jpg"));
         categories.add(new Category(MECHANIC,""));
@@ -95,6 +140,7 @@ public class ChooseWorkCategoryActivity extends AppCompatActivity  {
         categoriesRecyclerView.setAdapter(categoryRecyclerViewAdapter);
         GridLayoutManager manager = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
         categoriesRecyclerView.setLayoutManager(manager);
+
     }
     
     /**

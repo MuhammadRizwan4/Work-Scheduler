@@ -1,11 +1,17 @@
 package soa.work.scheduler.workerAccount;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -20,9 +26,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Task;
@@ -37,14 +46,22 @@ import com.google.firebase.database.ValueEventListener;
 import com.onesignal.OneSignal;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import soa.work.scheduler.LoginActivity;
 import soa.work.scheduler.R;
+import soa.work.scheduler.Supportclasses.WeatherIcon;
+import soa.work.scheduler.Supportclasses.WeatherText;
+import soa.work.scheduler.models.WeatherViewModel_user;
+import soa.work.scheduler.models.WeatherViewModel_worker;
 import soa.work.scheduler.utilities.AppStatus;
 import soa.work.scheduler.utilities.PrefManager;
 import soa.work.scheduler.models.UniversalWork;
@@ -67,6 +84,10 @@ public class WorkersActivity extends AppCompatActivity implements NavigationView
     DrawerLayout drawerLayout;
     @BindView(R.id.nav_view)
     NavigationView navigationView;
+    @BindView(R.id.weather_icon)
+    ImageView weather_icon;
+    @BindView(R.id.weather_wish)
+    TextView weather_wish;
     private String work_category;
     private FirebaseUser firebaseUser;
     private ImageView profilePictureImageView;
@@ -85,6 +106,13 @@ public class WorkersActivity extends AppCompatActivity implements NavigationView
     private FusedLocationProviderClient fusedLocationProviderClient;
     private double currentLatitude;
     private double currentLongitude;
+    protected WeatherViewModel_worker weatherViewModelWorker;
+    public static Activity activity;
+    public static String city;
+    private FusedLocationProviderClient mFusedLocationProviderClient;
+    private boolean detectCityAutomatically;
+    SharedPreferences sharedPrefs;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +120,17 @@ public class WorkersActivity extends AppCompatActivity implements NavigationView
         setContentView(R.layout.activity_workers);
 
         ButterKnife.bind(this);
+
+        activity = WorkersActivity.this;
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        detectCityAutomatically = sharedPrefs.getBoolean(
+                getString(R.string.detect_city_automatically_key),
+                Boolean.valueOf(getString(R.string.detect_city_automatically_default))
+        );
+
+        if (detectCityAutomatically) {
+            getLocation();
+        }
 
         new PrefManager(this).setLastOpenedActivity(WORKER_ACCOUNT);
 
@@ -102,9 +141,41 @@ public class WorkersActivity extends AppCompatActivity implements NavigationView
         progressDialog.setCancelable(false);
         progressDialog.show();
 
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(this);
+
+        weatherViewModelWorker = ViewModelProviders.of(this).get(WeatherViewModel_worker.class);
+        weatherViewModelWorker.getData().observe(this, weatherModel -> {
+            String iconId = weatherModel.getWeather().get(0).getIcon();
+
+            if (weatherModel != null) {
+                Calendar c = Calendar.getInstance();
+                int timeOfDay = c.get(Calendar.HOUR_OF_DAY);
+                if(timeOfDay < 12){
+                    weather_wish.setText("Good Morning " + acct.getGivenName() + ", " + WeatherText.getWeatherText(iconId));
+                }else if(timeOfDay < 16){
+                    weather_wish.setText("Good Afternoon " + acct.getGivenName() + ", " + WeatherText.getWeatherText(iconId));
+                }else if(timeOfDay < 23){
+                    weather_wish.setText("Good Evening " + acct.getGivenName() + ", " + WeatherText.getWeatherText(iconId));
+                }else {
+                    weather_wish.setText("Good Night " + acct.getGivenName() + ", " + WeatherText.getWeatherText(iconId));
+                }
+
+
+                weather_icon.setImageResource(WeatherIcon.getWeatherIcon(iconId));
+            } else {
+                if (appStatus.isOnline()) {
+                    weather_wish.setText("Unable to load");
+                    weather_icon.setImageResource(R.drawable.unknown);
+                }
+            }
+        });
+
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference userAccountsRef = FirebaseDatabase.getInstance().getReference(USER_ACCOUNTS);
-        DatabaseReference currentAccount = userAccountsRef.child(currentUser.getUid());
+        DatabaseReference currentAccount = null;
+        if (currentUser != null) {
+            currentAccount = userAccountsRef.child(currentUser.getUid());
+        }
         currentAccount.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -231,6 +302,32 @@ public class WorkersActivity extends AppCompatActivity implements NavigationView
                 }
             });
 
+        }
+    }
+    public void getLocation() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+            }
+        } else {
+            mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+            mFusedLocationProviderClient.getLastLocation()
+                    .addOnSuccessListener(this, location -> {
+                        if (location != null) {
+                            Geocoder gcd = new Geocoder(this, Locale.getDefault());
+                            List<Address> addresses = null;
+                            try {
+                                addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            if (addresses != null && addresses.size() > 0) {
+                                city = addresses.get(0).getLocality();
+                                WeatherViewModel_worker weatherViewModelWorker = new WeatherViewModel_worker(getApplication());
+                                weatherViewModelWorker.refresh();
+                            }
+                        }
+                    });
         }
     }
 

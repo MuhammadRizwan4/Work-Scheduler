@@ -1,4 +1,11 @@
 <resources>
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="weather_icon_width_and_height">30dp</dimen>
+    <dimen name="weather_icon_margin_top">5dp</dimen>
+    <dimen name="weather_icon_right_margin">10dp</dimen>
+    <dimen name="weather_temp_height">30dp</dimen>
+    <dimen name="weather_temp_right_margin">10dp</dimen>
+    <dimen name="weather_temp_margin_top">5dp</dimen>
+    <dimen name="weather_temp_padding_top">5dp</dimen>
 </resources>

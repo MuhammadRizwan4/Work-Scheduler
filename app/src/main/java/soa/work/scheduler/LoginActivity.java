@@ -156,7 +156,7 @@ public class LoginActivity extends AppCompatActivity {
                                         UserAccount userAccount = new UserAccount();
                                         userAccount.setAccountCreatedOn(currentDateAndTime);
                                         userAccount.setEmail(user.getEmail());
-                                        userAccount.setName(user.getDisplayName());
+                                            userAccount.setName(user.getDisplayName());
                                         userAccount.setWorkCategory("false");
                                         userAccountsRef.child(user.getUid()).setValue(userAccount);
                                         Toast.makeText(LoginActivity.this, "User Signed In", Toast.LENGTH_SHORT).show();

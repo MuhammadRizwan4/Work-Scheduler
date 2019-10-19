@@ -5,6 +5,7 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Url;
 import soa.work.scheduler.models.OneSignalIds;
+import soa.work.scheduler.retrofit.Weather.WeatherModel;
 
 public interface ApiService {
 
@@ -14,4 +15,6 @@ public interface ApiService {
     @GET()
     Call<ResponseBody> getImage(@Url String url);
 
+    @GET
+    Call<WeatherModel> getWeatherData(@Url String url);
 }

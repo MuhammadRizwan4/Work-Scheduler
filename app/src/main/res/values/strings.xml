@@ -13,5 +13,14 @@
     <string name="work_description_hint">Work Description</string>
     <string name="you_have_accepted">You have accepted this work</string>
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyDxlNwc0KqZFIvu-mh2lwxVejeZeXAOsR8</string>
+    <string name="temperature_value_default">\?</string>
     <string name="todo">TODO</string>
+    <string name="weather_temperature_concatenate">%1$s ℃ - %2$s</string>
+    <string name="detect_city_automatically_key">detect_city_automatically</string>
+    <string name="detect_city_automatically_title">Detect city automatically</string>
+    <string name="detect_city_automatically_default">true</string>
+    <string name="weather_city_title">City</string>
+    <string name="weather_city_key">weather_city</string>
+    <string name="weather_city_default">delhi</string>
+    <string name="weather_icon_description">Shows weather icon</string>
 </resources>

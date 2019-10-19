@@ -34,6 +34,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    buildTypes.each {
+        it.buildConfigField 'String', 'WEATHER_API_KEY', myWeatherApiKey
+    }
     buildTypes {
         release {
             minifyEnabled false

@@ -1,11 +1,17 @@
 package soa.work.scheduler.userAccount;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,13 +27,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
@@ -38,17 +45,24 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.jakewharton.picasso.OkHttp3Downloader;
 import com.onesignal.OneSignal;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import okhttp3.OkHttpClient;
 import soa.work.scheduler.CategoryRecyclerViewAdapter;
+import soa.work.scheduler.Supportclasses.WeatherIcon;
+import soa.work.scheduler.Supportclasses.WeatherText;
+import soa.work.scheduler.models.WeatherViewModel_user;
+import soa.work.scheduler.utilities.AppStatus;
 import soa.work.scheduler.workerAccount.ChooseWorkCategoryActivity;
 import soa.work.scheduler.LoginActivity;
 import soa.work.scheduler.utilities.PrefManager;
@@ -73,6 +87,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     NavigationView navigationView;
     @BindView(R.id.categories_recycler_view)
     RecyclerView categoriesRecyclerView;
+    @BindView(R.id.weather_icon)
+    ImageView weather_icon;
+    @BindView(R.id.weather_wish)
+    TextView weather_wish;
     private ImageView profilePictureImageView;
     private TextView profileNameTextView;
     private FirebaseUser currentUser;
@@ -83,6 +101,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 4321;
     private FusedLocationProviderClient fusedLocationProviderClient;
     public static final String IS_ACCOUNT_DELETED = "is_account_deleted";
+    public static String city;
+    private FusedLocationProviderClient mFusedLocationProviderClient;
+    private boolean detectCityAutomatically;
+    SharedPreferences sharedPrefs;
+    public static Activity activity;
+    protected WeatherViewModel_user weatherViewModelUser;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,12 +120,51 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             intent.setData(Uri.parse("tel:" + phoneNumber));
             startActivity(intent);
         }
+        activity = MainActivity.this;
+
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        detectCityAutomatically = sharedPrefs.getBoolean(
+                getString(R.string.detect_city_automatically_key),
+                Boolean.valueOf(getString(R.string.detect_city_automatically_default))
+        );
+
+        if (detectCityAutomatically) {
+            getLocation();
+        }
 
         ButterKnife.bind(this);
         new PrefManager(this).setLastOpenedActivity(USER_ACCOUNT);
-
+        AppStatus appStatus = new AppStatus(this);
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
+        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(this);
+
+        weatherViewModelUser = ViewModelProviders.of(this).get(WeatherViewModel_user.class);
+        weatherViewModelUser.getData().observe(this, weatherModel -> {
+            String iconId = weatherModel.getWeather().get(0).getIcon();
+
+            if (weatherModel != null) {
+                Calendar c = Calendar.getInstance();
+                int timeOfDay = c.get(Calendar.HOUR_OF_DAY);
+                if(timeOfDay < 12){
+                    weather_wish.setText("Good Morning " + acct.getGivenName() + ", " + WeatherText.getWeatherText(iconId));
+                }else if(timeOfDay < 16){
+                    weather_wish.setText("Good Afternoon " + acct.getGivenName() + ", " + WeatherText.getWeatherText(iconId));
+                }else if(timeOfDay < 23){
+                    weather_wish.setText("Good Evening " + acct.getGivenName() + ", " + WeatherText.getWeatherText(iconId));
+                }else {
+                    weather_wish.setText("Good Night " + acct.getGivenName() + ", " + WeatherText.getWeatherText(iconId));
+                }
+
+
+                weather_icon.setImageResource(WeatherIcon.getWeatherIcon(iconId));
+            } else {
+                if (appStatus.isOnline()) {
+                    weather_wish.setText("Unable to load");
+                    weather_icon.setImageResource(R.drawable.unknown);
+                }
+            }
+        });
         getLocationPermission();
 
         updateAccountSwitcherNavItem();
@@ -124,6 +188,32 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         categoriesRecyclerView.setAdapter(categoryRecyclerViewAdapter);
         GridLayoutManager manager = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
         categoriesRecyclerView.setLayoutManager(manager);
+    }
+    public void getLocation() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+            }
+        } else {
+            mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+            mFusedLocationProviderClient.getLastLocation()
+                    .addOnSuccessListener(this, location -> {
+                        if (location != null) {
+                            Geocoder gcd = new Geocoder(this, Locale.getDefault());
+                            List<Address> addresses = null;
+                            try {
+                                addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            if (addresses != null && addresses.size() > 0) {
+                                city = addresses.get(0).getLocality();
+                                WeatherViewModel_user weatherViewModelUser = new WeatherViewModel_user(getApplication());
+                                weatherViewModelUser.refresh();
+                            }
+                        }
+                    });
+        }
     }
 
     private void setupAccountHeader() {
